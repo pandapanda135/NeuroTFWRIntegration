@@ -1,14 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace EditParsing.Patching;
 
 public enum ChangeType
 {
+	/// <summary>
+	/// This is for adding new files, this is not used by SearchParser.
+	/// </summary>
 	Add,
+	/// <summary>
+	/// This is for deleting files, this is not used by SearchParser
+	/// </summary>
 	Delete,
-	Change
+	/// <summary>
+	/// This is for changing existing files.
+	/// </summary>
+	Change,
+	/// <summary>
+	/// This is for when you want to move a file to a new directory.
+	/// </summary>
+	Move,
 }
 
 /// <summary>
@@ -16,22 +30,30 @@ public enum ChangeType
 /// </summary>
 public abstract class Parser
 {
- 	protected Parser(string providedPatchString, List<string> fileNames)
+ 	protected Parser(string providedPatchString, List<string> fileNames, FileHelpers.OpenFile openFile, FileHelpers.WriteFile writeFile, FileHelpers.DeleteFile deleteFile)
 	{
 		ProvidedPatchString = providedPatchString;
 		ValidFileNames = fileNames;
+		
+		_openFile = openFile;
+		_writeFile = writeFile;
+		_deleteFile = deleteFile;
 
 	}
 	// protected List<CodeWindow> CurrentWindows;
+
+	private readonly FileHelpers.OpenFile _openFile;
+	private readonly FileHelpers.WriteFile _writeFile;
+	private readonly FileHelpers.DeleteFile _deleteFile;
+	
 
 	#region Symbols
 
 	protected List<string> ValidFileNames;
 	/// <summary>
-	/// This is for formats like the one featured in the OpenAI cookbook, where the file is specified like
-	/// "*** Update File: file.py" rather than just the file name.
+	/// This is for the path sent in a patch.
 	/// </summary>
-	protected string ModifiedFile;
+	protected string ModifiedFilePath;
 
 	protected string StartPatch;
 	protected string SeparatePatch;
@@ -57,9 +79,9 @@ public abstract class Parser
 	/// <summary>
 	/// This is the patch sent as it's raw text
 	/// </summary>
-	protected string ProvidedPatchString;
+	protected readonly string ProvidedPatchString;
 
-	public Patch Patch = new();
+	public Patch Patch = new("",[]);
 
 	/// <summary>
 	/// This holds the provided patch's lines
@@ -72,6 +94,7 @@ public abstract class Parser
 	protected int Index;
 
 	// this is for getting the file that gets updated I think?????
+	// maybe don't need and can remove?
 	public string GetUpdatedFile(string fileText, Patch patch)
 	{
 		return "";
@@ -143,11 +166,11 @@ public abstract class Parser
 		// 		ParsingErrors.InvalidFileName);
 		
 		Lines = GetLines(patchString);
-		ModifiedFile = GetPatchFile(Lines);
-		if (string.IsNullOrEmpty(ModifiedFile))
+		ModifiedFilePath = GetPatchFile(Lines);
+		if (string.IsNullOrEmpty(ModifiedFilePath))
 		{
 			throw new ParsingException(
-				$"There was an issue with getting the patch's file, this is what was received: {ModifiedFile}",
+				$"There was an issue with getting the patch's file, this is what was received: {ModifiedFilePath}",
 				ParsingErrors.InvalidFileName);
 		}
 		
@@ -196,7 +219,6 @@ public abstract class Parser
 	protected abstract void ParseUpdateFile(string text);
 
 	#endregion
-
 	
 	#region PublicEntryPoints
 	
@@ -254,11 +276,59 @@ public abstract class Parser
 
 	private Commit CreateCommitFromPatch(Patch patch)
 	{
-		return new Commit();
+		Commit commit = new();
+
+		foreach (var action in patch.Actions)
+		{
+			var fileChanges = new FileChanges(action.Type);
+			switch (action.Type)
+			{
+				case ChangeType.Add:
+					fileChanges.NewContext = action.NewFile;
+					break;
+				case ChangeType.Delete:
+					fileChanges.OldContent = _openFile(patch.Path);
+					break;
+				case ChangeType.Change:
+					fileChanges.NewContext = action.NewFile;
+					fileChanges.OldContent = _openFile(patch.Path);
+					break;
+				case ChangeType.Move:
+					fileChanges.MovePath = patch.Path;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(commit), "Commits can only apply the types valid in ChangeType.");
+			}
+			
+			commit.Changes.Add(ModifiedFilePath, fileChanges);
+		}
+		
+		return commit;
 	}
 
 	private void ApplyCommit(Commit commit)
 	{
+		foreach (var change in commit.Changes)
+		{
+			string path = change.Key;
+
+			switch (change.Value.Type)
+			{
+				case ChangeType.Add:
+					_writeFile(path, change.Value.NewContext);
+					break;
+				case ChangeType.Change:
+					_writeFile(path, change.Value.NewContext);
+					break;
+				case ChangeType.Delete:
+					_deleteFile(path);
+					break;
+				case ChangeType.Move:
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(commit), "Commits can only apply the types in ChangeType.");
+			}
+		}
 	}
 
 	#endregion

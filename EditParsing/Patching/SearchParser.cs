@@ -21,7 +21,9 @@ public class SearchParser : Parser
 	// print("This is a test")
 	// >>>>>>> REPLACE
 	// ```
-	public SearchParser(string patchPatchString, List<string> fileNames) : base(patchPatchString, fileNames)
+	public SearchParser(string patchPatchString, List<string> fileNames,
+		FileHelpers.OpenFile open, FileHelpers.WriteFile write, FileHelpers.DeleteFile delete)
+		: base(patchPatchString, fileNames, open, write, delete)
 	{
 		StartPatch = "'''";
 		SearchPatch = "<<<<<<< SEARCH";
@@ -54,15 +56,15 @@ public class SearchParser : Parser
 	protected override Patch ParseInputPatch()
 	{
 		// check if provided name is present
-		if (!ValidFileNames.Contains(ModifiedFile))
+		if (!ValidFileNames.Contains(ModifiedFilePath))
 		{
 			// return new();
 			throw new ParsingException("The provided file name was not valid.", ParsingErrors.InvalidFileName);
 		}
 		
-		Logger.Info($"window name: {ModifiedFile}");
+		Logger.Info($"window name: {ModifiedFilePath}");
 
-		Patch patch = new();
+		Patch patch = new(ModifiedFilePath, []);
 		// Is done and read string uses Lines which is window text not patch text. 
 		while (!IsDone())
 		{
@@ -70,7 +72,6 @@ public class SearchParser : Parser
 			// start
 			if (ReadString(StartPatch, out _))
 			{
-				Patch = new();
 				continue;
 			}
 
@@ -86,7 +87,7 @@ public class SearchParser : Parser
 			if (ReadString(SeparatePatch, out var separate))
 			{
 				Logger.Info($"separate patch line: {separate}");
-				List<string> lines = new();
+				List<string> lines = [];
 				while (!ReadString(ReplacePatch, out _))
 				{
 					lines.Add(CurrentLine);

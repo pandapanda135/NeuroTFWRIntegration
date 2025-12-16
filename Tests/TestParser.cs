@@ -1,6 +1,4 @@
 using EditParsing.Patching;
-using NeuroTFWRIntegration;
-using UnityEngine.PlayerLoop;
 
 namespace Tests;
 
@@ -11,21 +9,29 @@ public class TestParser
 	{
 	}
 	
-	#if TESTING
-		
-		// [HarmonyPatch(typeof(NeuroSdk.NeuroSdkSetup), nameof(NeuroSdk.NeuroSdkSetup.ModuleInitializer))]
-		// [HarmonyPrefix]
-		// static bool SetupPrefix()
-		// {
-		// 	return false;
-		// }
-		
-	#endif
+	public string Open(string path)
+	{
+		return "This is fake file contents";
+	}
+
+	public void Write(string path, string write)
+	{
+		return;
+	}
+	public void Delete(string path)
+	{
+		return;
+	}
+	
+	private SearchParser GetSearchParser(string str, List<string> files)
+	{
+		return new SearchParser(str, files, Open, Write, Delete);
+	}
 
 	[Test]
 	public void ValidJson()
 	{
-		var searchParser = new SearchParser(TestingStrings.TestingStringOne, ["main", "second"]);
+		var searchParser = GetSearchParser(TestingStrings.TestingStringOne, ["main", "second"]);
 		Console.WriteLine($"testing string: {TestingStrings.TestingStringOne}");
 		Console.WriteLine($"personal lines: {searchParser.Lines.Count}");
 		
@@ -50,7 +56,7 @@ public class TestParser
 	public void InvalidJson()
 	{
 		string failString = "This string should make it fail.\n" + TestingStrings.TestingStringOne;
-		var searchParser = new SearchParser(failString, ["main", "second"]);
+		var searchParser = GetSearchParser(TestingStrings.TestingStringOne, ["main", "second"]);
 		
 		try
 		{
