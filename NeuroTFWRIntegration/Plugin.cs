@@ -15,7 +15,6 @@ public class Plugin : BaseUnityPlugin
 	private void Awake()
 	{
 		SetLogger(Logger);
-		Info($"This is the new plugin");
 		Info($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
 		Environment.SetEnvironmentVariable("NEURO_SDK_WS_URL", "ws://localhost:8000/ws/");
 		NeuroSdk.NeuroSdkSetup.Initialize("The Farmer Was Replaced");
