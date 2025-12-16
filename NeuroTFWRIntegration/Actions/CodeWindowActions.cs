@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using EditParsing.Patching;
 using NeuroSdk.Actions;
 using NeuroSdk.Json;
 using NeuroSdk.Messages.Outgoing;
 using NeuroSdk.Websocket;
-using NeuroTFWRIntegration.Patching;
 
 namespace NeuroTFWRIntegration.Actions;
 
@@ -95,10 +95,12 @@ public static class CodeWindowActions
 		protected override ExecutionResult Validate(ActionJData actionData, out string parsedData)
 		{
 			parsedData = actionData.Data?.Value<string>("text");
+			if (parsedData is null) return ExecutionResult.Failure($"");
 
 			try
 			{
-				var parser = new SearchParser(parsedData);
+				parsedData = parsedData.Replace("\\n", "\n");
+				var parser = new SearchParser(parsedData, MainSim.Inst.workspace.codeWindows.Select(kvp => kvp.Key).ToList());
 				if (!parser.IsValidPatch(parsedData, out string reason))
 				{
 					return ExecutionResult.Failure(
@@ -112,17 +114,17 @@ public static class CodeWindowActions
 					$"You made a mistake when writing this patch, this is the error message: {e.Message}");
 			}
 
-			return ExecutionResult.Success($"");
+			return ExecutionResult.Success($"The patch is being inserted now.");
 		}
 
 		protected override void Execute(string parsedData)
 		{
 			Logger.Info($"running write execute");
-			var parser = new SearchParser(parsedData);
+			var parser = new SearchParser(parsedData, MainSim.Inst.workspace.codeWindows.Select(kvp => kvp.Key).ToList());
 
 			try
 			{
-				parser.Parse(parsedData);
+				parser.Parse();
 			}
 			catch (Exception e)
 			{

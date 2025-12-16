@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace NeuroTFWRIntegration.Patching;
+namespace EditParsing.Patching;
 
 public enum ChangeType
 {
@@ -17,10 +17,17 @@ public enum ChangeType
 /// </summary>
 public abstract class Parser
 {
-	protected List<CodeWindow> CurrentWindows;
+ 	protected Parser(string providedPatchString, List<string> fileNames)
+	{
+		ProvidedPatchString = providedPatchString;
+		ValidFileNames = fileNames;
+
+	}
+	// protected List<CodeWindow> CurrentWindows;
 
 	#region Symbols
 
+	protected List<string> ValidFileNames;
 	/// <summary>
 	/// This is for formats like the one featured in the OpenAI cookbook, where the file is specified like
 	/// "*** Update File: file.py" rather than just the file name.
@@ -51,14 +58,14 @@ public abstract class Parser
 	/// <summary>
 	/// This is the patch sent as it's raw text
 	/// </summary>
-	protected string ProvidedText;
+	protected string ProvidedPatchString;
 
 	protected Patch Patch = new();
 
 	/// <summary>
 	/// This holds the provided patch's lines
 	/// </summary>
-	public List<string> Lines;
+	public List<string> Lines = new();
 
 	/// <inheritdoc cref="GetCurrentLine"/>
 	protected string CurrentLine => GetCurrentLine();
@@ -101,10 +108,12 @@ public abstract class Parser
 		}
 		catch (Exception e)
 		{
-			Logger.Info($"Index was out of bounds? {e}");
+			Logger.Error($"Index was out of bounds? {e}");
 			line = "";
-			return true;
+			// return true;
+			throw;
 		}
+		Logger.Info($"read string line: {line}");
 
 		return true;
 	}
@@ -129,13 +138,20 @@ public abstract class Parser
 	private void ParsePatchString(string patchString)
 	{
 		// this is for testing provided file name
-		var window = GetWindowFromPatch(patchString);
-		if (window is null)
-			throw new ParsingException("There was an issue getting the name of the file.",
-				ParsingErrors.InvalidFileName);
-		ModifiedFile = window.fileName;
-
+		// var window = GetWindowFromPatch(patchString);
+		// if (window is null)
+		// 	throw new ParsingException("There was an issue getting the name of the file.",
+		// 		ParsingErrors.InvalidFileName);
+		
 		Lines = GetLines(patchString);
+		ModifiedFile = GetPatchFile(Lines);
+		if (string.IsNullOrEmpty(ModifiedFile))
+		{
+			throw new ParsingException(
+				$"There was an issue with getting the patches' file, this is what was received: {ModifiedFile}",
+				ParsingErrors.InvalidFileName);
+		}
+		
 		try
 		{
 			ParseInputPatch();
@@ -164,11 +180,11 @@ public abstract class Parser
 		return true;
 	}
 
-	public void Parse(string patchString)
+	public void Parse()
 	{
 		try
 		{
-			ParsePatchString(patchString);
+			ParsePatchString(ProvidedPatchString);
 		}
 		catch (Exception e)
 		{
@@ -189,16 +205,19 @@ public abstract class Parser
 
 	// TODO: probably replace return value this with a Patch class
 	public abstract Patch TextToPatch(string text);
-
 	/// <summary>
 	/// Get the windows that are mentioned in the patch
 	/// </summary>
 	/// <param name="text">The patch's text</param>
 	/// <returns>The code windows targeted in the patch</returns>
-	public abstract List<CodeWindow> GetWindows(string text);
-
-	// get where in the file the patch is targeting to modify, IDK what to return rn 
-	public abstract void GetOrigin(string text);
+	// public abstract List<CodeWindow> GetWindows(string text);
+	
+	/// <summary>
+	/// Return where the patch wants to modify
+	/// </summary>
+	/// <param name="patchText"></param>
+	/// <returns>This should return the name of the file that it comes from.</returns>
+	public abstract string GetPatchFile(List<string> patchText);
 
 	public abstract void ParseInputPatch();
 
@@ -216,35 +235,6 @@ public abstract class Parser
 	{
 		return text.Split("\n").ToList();
 	}
-
-	/// <inheritdoc cref="GetLines(string)"/>
-	private static List<string> GetLines(CodeWindow window)
-	{
-		return GetLines(window.CodeInput.text);
-	}
-
-	private static CodeWindow GetWindowFromPatch(string patchString)
-	{
-		var patchLines = GetLines(patchString);
-		CodeWindow window = null;
-		foreach (var line in patchLines)
-		{
-			if (!MainSim.Inst.workspace.codeWindows.ContainsKey(line)) return null;
-
-			var kvp = MainSim.Inst.workspace.codeWindows.First(kvp => kvp.Key == line);
-			window = kvp.Value;
-			if (window is not null) break;
-		}
-
-		if (window is null)
-			throw new ParsingException("There was an issue getting the name of the file.",
-				ParsingErrors.InvalidFileName);
-
-		return window;
-	}
-
-	// This should get replaced with commit stuff
-	// public abstract void ApplyPatch(string text, CodeWindow window);
 
 	#endregion
 

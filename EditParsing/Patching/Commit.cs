@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace NeuroTFWRIntegration.Patching;
+namespace EditParsing.Patching;
 
 public class FileChanges
 {

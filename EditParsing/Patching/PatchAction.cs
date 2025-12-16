@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace NeuroTFWRIntegration.Patching;
+namespace EditParsing.Patching;
 
 /// <summary>
 /// This is for what a patch should change, if the type is add or change you should use NewFile. If you use Delete you don't need to provide anything

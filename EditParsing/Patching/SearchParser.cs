@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NeuroTFWRIntegration.Patching;
+namespace EditParsing.Patching;
 
 /// <summary>
 /// This is the parser for the format detailed here:
@@ -21,7 +21,7 @@ public class SearchParser : Parser
 	// print("This is a test")
 	// >>>>>>> REPLACE
 	// ```
-	public SearchParser(string patchText)
+	public SearchParser(string patchPatchString, List<string> fileNames) : base(patchPatchString, fileNames)
 	{
 		StartPatch = "'''";
 		SearchPatch = "<<<<<<< SEARCH";
@@ -29,7 +29,6 @@ public class SearchParser : Parser
 		ReplacePatch = ">>>>>>> REPLACE";
 		// IDK if this should actually be used or just stop after REPLACE (We probably want to use this)
 		EndPatch = "\'\'\'";
-		ProvidedText = patchText;
 	}
 
 	protected override bool IsDone()
@@ -44,25 +43,26 @@ public class SearchParser : Parser
 		throw new System.NotImplementedException();
 	}
 
-	public override List<CodeWindow> GetWindows(string text) => MainSim.Inst.workspace.codeWindows.Select(kvp =>
-		kvp.Value).Where(window => text.Contains(window.fileName)).ToList();
+	// public override List<CodeWindow> GetWindows(string text) => MainSim.Inst.workspace.codeWindows.Select(kvp =>
+	// 	kvp.Value).Where(window => text.Contains(window.fileName)).ToList();
 
-	public override void GetOrigin(string text)
+	public override string GetPatchFile(List<string> patchText)
 	{
-		throw new System.NotImplementedException();
+		// this should be the file name.
+		return patchText[0];
 	}
 
 	public override void ParseInputPatch()
 	{
 		Logger.Info($"starting parse input");
 		// check if provided name is present
-		if (!MainSim.Inst.workspace.codeWindows.ContainsKey(ModifiedFile))
+		if (!ValidFileNames.Contains(ModifiedFile))
 		{
 			throw new ParsingException("The provided file name was not valid.", ParsingErrors.InvalidFileName);
 		}
 
 		Logger.Info($"window name: {ModifiedFile}");
-
+		
 		// Is done and read string uses Lines which is window text not patch text. 
 		while (!IsDone())
 		{
