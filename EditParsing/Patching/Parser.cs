@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace EditParsing.Patching;
 
@@ -60,7 +59,7 @@ public abstract class Parser
 	/// </summary>
 	protected string ProvidedPatchString;
 
-	protected Patch Patch = new();
+	public Patch Patch = new();
 
 	/// <summary>
 	/// This holds the provided patch's lines
@@ -148,13 +147,13 @@ public abstract class Parser
 		if (string.IsNullOrEmpty(ModifiedFile))
 		{
 			throw new ParsingException(
-				$"There was an issue with getting the patches' file, this is what was received: {ModifiedFile}",
+				$"There was an issue with getting the patch's file, this is what was received: {ModifiedFile}",
 				ParsingErrors.InvalidFileName);
 		}
 		
 		try
 		{
-			ParseInputPatch();
+			Patch = ParseInputPatch();
 		}
 		catch (Exception e)
 		{
@@ -163,23 +162,44 @@ public abstract class Parser
 		}
 	}
 
-	public bool IsValidPatch(string patchString, out string reason)
-	{
-		try
-		{
-			ParsePatchString(patchString);
-		}
-		catch (Exception e)
-		{
-			Logger.Error($"Invalid patch string: {e}");
-			reason = e.Message;
-			return false;
-		}
+	#endregion
 
-		reason = "";
-		return true;
-	}
+	#region AbstractMethods
+	
+	/// <summary>
+	/// Check if the current index is the max possible
+	/// </summary>
+	protected abstract bool IsDone();
 
+	public abstract Patch TextToPatch(string text);
+	
+	/// <summary>
+	/// Get the windows that are mentioned in the patch
+	/// </summary>
+	/// <param name="text">The patch's text</param>
+	/// <returns>The code windows targeted in the patch</returns>
+	// public abstract List<CodeWindow> GetWindows(string text);
+	
+	/// <summary>
+	/// Return where the patch wants to modify
+	/// </summary>
+	/// <param name="patchText"></param>
+	/// <returns>This should return the name of the file that it comes from.</returns>
+	protected abstract string GetPatchFile(List<string> patchText);
+
+	/// <summary>
+	/// This is meant to parse the patch that was input and create a <see cref="BasePatch"/> that includes those actions.
+	/// </summary>
+	/// <returns>This should return the patch you created, if you use <see cref="Parse"/> the parser's <see cref="Patch"/> will be set for you.</returns>
+	protected abstract Patch ParseInputPatch();
+
+	protected abstract void ParseUpdateFile(string text);
+
+	#endregion
+
+	
+	#region PublicEntryPoints
+	
 	public void Parse()
 	{
 		try
@@ -196,42 +216,34 @@ public abstract class Parser
 
 		ApplyCommit(commit);
 	}
-
-	#endregion
-
-	#region AbstractMethods
-
-	protected abstract bool IsDone();
-
-	// TODO: probably replace return value this with a Patch class
-	public abstract Patch TextToPatch(string text);
-	/// <summary>
-	/// Get the windows that are mentioned in the patch
-	/// </summary>
-	/// <param name="text">The patch's text</param>
-	/// <returns>The code windows targeted in the patch</returns>
-	// public abstract List<CodeWindow> GetWindows(string text);
 	
-	/// <summary>
-	/// Return where the patch wants to modify
-	/// </summary>
-	/// <param name="patchText"></param>
-	/// <returns>This should return the name of the file that it comes from.</returns>
-	public abstract string GetPatchFile(List<string> patchText);
+	
+	public bool IsValidPatch(string patchString, out string reason)
+	{
+		try
+		{
+			ParsePatchString(patchString);
+		}
+		catch (Exception e)
+		{
+			Logger.Error($"Invalid patch string: {e}");
+			reason = e.Message;
+			return false;
+		}
 
-	public abstract void ParseInputPatch();
-
-	protected abstract void ParseUpdateFile(string text);
-
+		reason = "";
+		return true;
+	}
+	
 	#endregion
-
+	
 	#region Window
 
 	/// <summary>
 	/// Split a string into it's individual lines.
 	/// </summary>
 	/// <returns></returns>
-	private static List<string> GetLines(string text)
+	protected static List<string> GetLines(string text)
 	{
 		return text.Split("\n").ToList();
 	}
@@ -240,12 +252,12 @@ public abstract class Parser
 
 	#region CommitCreation
 
-	public Commit CreateCommitFromPatch(Patch patch)
+	private Commit CreateCommitFromPatch(Patch patch)
 	{
 		return new Commit();
 	}
 
-	public void ApplyCommit(Commit commit)
+	private void ApplyCommit(Commit commit)
 	{
 	}
 
@@ -258,10 +270,10 @@ public enum ParsingErrors
 	ParsingIssue,
 }
 
-public class ParsingException(string message, ParsingErrors reasons) : Exception
+public class ParsingException(string message, ParsingErrors reason) : Exception
 {
 	public override string Message { get; } = message;
-	public override string StackTrace { get; } = StackTraceUtility.ExtractStackTrace();
+	public override string StackTrace { get; } = new System.Diagnostics.StackTrace().ToString();
 
-	public ParsingErrors Reasons { get; } = reasons;
+	public ParsingErrors Reason { get; } = reason;
 }

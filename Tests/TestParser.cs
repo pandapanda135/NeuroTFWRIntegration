@@ -25,8 +25,8 @@ public class TestParser
 	[Test]
 	public void ValidJson()
 	{
-		var searchParser = new SearchParser(PatchStrings.TestingString, ["main", "second"]);
-		Console.WriteLine($"testing string: {PatchStrings.TestingString}");
+		var searchParser = new SearchParser(TestingStrings.TestingStringOne, ["main", "second"]);
+		Console.WriteLine($"testing string: {TestingStrings.TestingStringOne}");
 		Console.WriteLine($"personal lines: {searchParser.Lines.Count}");
 		
 		try
@@ -39,14 +39,17 @@ public class TestParser
 			Assert.Fail(e.ToString());
 		}
 
-		Console.WriteLine($"lines: {searchParser.IsValidPatch(PatchStrings.TestingString, out string reason)}");
-		Assert.Pass();
+		foreach (var patchAction in searchParser.Patch.Actions)
+		{
+			Console.WriteLine($"actions: {patchAction.Type}    new file contents:\n{patchAction.NewFile}");
+		}
+		Assert.Pass($"There were no issues when parsing TestingStringOne");
 	}
 
 	[Test]
 	public void InvalidJson()
 	{
-		string failString = "This string should make it fail.\n" + PatchStrings.TestingString;
+		string failString = "This string should make it fail.\n" + TestingStrings.TestingStringOne;
 		var searchParser = new SearchParser(failString, ["main", "second"]);
 		
 		try
@@ -59,7 +62,7 @@ public class TestParser
 			Assert.Pass($"This should be Index was out of range: {e}");
 		}
 
-		Console.WriteLine($"lines: {searchParser.IsValidPatch(PatchStrings.TestingString, out string reason)}");
+		Console.WriteLine($"lines: {searchParser.IsValidPatch(TestingStrings.TestingStringOne, out string reason)}");
 		Assert.Fail($"This should fail the parsing's test.");
 	}
 }

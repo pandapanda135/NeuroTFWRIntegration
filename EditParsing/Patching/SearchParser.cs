@@ -33,36 +33,36 @@ public class SearchParser : Parser
 
 	protected override bool IsDone()
 	{
-		if (Index >= Lines.Count) return true;
-
-		return false;
+		return Index >= Lines.Count;
 	}
 
 	public override Patch TextToPatch(string text)
 	{
-		throw new System.NotImplementedException();
+		Lines = GetLines(text);
+		return ParseInputPatch();
 	}
 
 	// public override List<CodeWindow> GetWindows(string text) => MainSim.Inst.workspace.codeWindows.Select(kvp =>
 	// 	kvp.Value).Where(window => text.Contains(window.fileName)).ToList();
 
-	public override string GetPatchFile(List<string> patchText)
+	protected override string GetPatchFile(List<string> patchText)
 	{
 		// this should be the file name.
 		return patchText[0];
 	}
 
-	public override void ParseInputPatch()
+	protected override Patch ParseInputPatch()
 	{
-		Logger.Info($"starting parse input");
 		// check if provided name is present
 		if (!ValidFileNames.Contains(ModifiedFile))
 		{
+			// return new();
 			throw new ParsingException("The provided file name was not valid.", ParsingErrors.InvalidFileName);
 		}
-
-		Logger.Info($"window name: {ModifiedFile}");
 		
+		Logger.Info($"window name: {ModifiedFile}");
+
+		Patch patch = new();
 		// Is done and read string uses Lines which is window text not patch text. 
 		while (!IsDone())
 		{
@@ -86,17 +86,17 @@ public class SearchParser : Parser
 			if (ReadString(SeparatePatch, out var separate))
 			{
 				Logger.Info($"separate patch line: {separate}");
-				List<string> lines = [separate];
+				List<string> lines = new();
 				while (!ReadString(ReplacePatch, out _))
 				{
-					Index++;
 					lines.Add(CurrentLine);
+					Index++;
 				}
 
 				Logger.Info($"after while in separate");
 
 				PatchAction patchAction = new(ChangeType.Change, string.Join("\n", lines));
-				Patch.Actions.Add(patchAction);
+				patch.Actions.Add(patchAction);
 				Logger.Info($"after setting patch action");
 			}
 
@@ -118,13 +118,15 @@ public class SearchParser : Parser
 				if (empty != "")
 					throw new ParsingException("The patch continued after the end patch symbol",
 						ParsingErrors.ParsingIssue);
-				break;
+				Logger.Info($"patch actions amount: {patch.Actions.Count}");
+				return patch;
 			}
 
 			Index++;
 		}
-
-		// don't think we do anything here
+		
+		Logger.Info($"patch actions amount: {patch.Actions.Count}");
+		return patch;
 	}
 
 	// this is for when changing file contents

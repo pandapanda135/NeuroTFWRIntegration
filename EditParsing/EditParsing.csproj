@@ -5,9 +5,4 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
-    
-    <ItemGroup>
-        <PackageReference Include="UnityEngine.Modules" Version="6000.0.43" IncludeAssets="compile"/>
-    </ItemGroup>
-    
 </Project>
