@@ -1,5 +1,4 @@
 using HarmonyLib;
-using NeuroSdk.Actions;
 using NeuroTFWRIntegration.Actions;
 
 namespace NeuroTFWRIntegration;
@@ -19,7 +18,20 @@ public static class RegisterPatches
 	public static void OpenMenu()
 	{
 		Logger.Info($"opened menu");
-		NeuroActionHandler.UnregisterActions(new PatchActions.GetWindowCode(), new PatchActions.WritePatch());
+		RegisterMainActions.UnregisterMain();
 	}
 
+	[HarmonyPatch(typeof(ResearchMenu), nameof(ResearchMenu.OpenCloseMenu))]
+	[HarmonyPrefix]
+	public static void SetupResearchMenu()
+	{
+		Logger.Warning($"setup research");
+		if (MainSim.Inst.researchMenu.IsOpen)
+		{
+			RegisterMainActions.RegisterMain();
+			return;
+		}
+		
+		RegisterMainActions.UnregisterMain();
+	}
 }

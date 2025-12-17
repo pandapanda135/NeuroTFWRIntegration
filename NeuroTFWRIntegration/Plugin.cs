@@ -18,15 +18,14 @@ public class Plugin : BaseUnityPlugin
 
 	private static ConfigEntry<string>? _websocketUrl;
 
-	// here for future proofing
-	private static ConfigEntry<bool>? _debug;
+	public static ConfigEntry<bool>? Debug;
 	
 	public Plugin()
 	{
 		Instance = this;
 		
 		_websocketUrl = ConfigStrings.WebsocketUrl.BaseToEntry();
-		_debug = ConfigStrings.Debug.BaseToEntry();
+		Debug = ConfigStrings.Debug.BaseToEntry();
 	}
 
 	private void Awake()
