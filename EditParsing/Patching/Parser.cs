@@ -31,7 +31,7 @@ public abstract class Parser
 {
  	protected Parser(string providedPatchString, List<string> fileNames, FileHelpers.OpenFile openFile, FileHelpers.WriteFile writeFile, FileHelpers.DeleteFile deleteFile)
 	{
-		ProvidedPatchString = providedPatchString;
+		ProvidedPatchString = FormatPatchString(providedPatchString);
 		ValidFileNames = fileNames;
 		
 		_openFile = openFile;
@@ -39,6 +39,13 @@ public abstract class Parser
 		_deleteFile = deleteFile;
 	}
 	// protected List<CodeWindow> CurrentWindows;
+
+	private static string FormatPatchString(string patch)
+	{
+		if (!patch.Contains("\\n") && !patch.Contains("\\t")) return patch;
+		patch = patch.Replace("\\n", "\n");
+		return patch.Replace("\\t", "\t");
+	}
 
 	private readonly FileHelpers.OpenFile _openFile;
 	private readonly FileHelpers.WriteFile _writeFile;
@@ -177,7 +184,7 @@ public abstract class Parser
 				$"There was an issue with getting the patch's file, this is what was received: {ModifiedFilePath}",
 				ParsingErrors.InvalidFileName);
 		}
-		
+		Logger.Info($"modified file path: {ModifiedFilePath}");
 		
 		try
 		{
@@ -203,10 +210,13 @@ public abstract class Parser
 	{
 		foreach (var action in patch.Actions)
 		{
-			if (string.IsNullOrEmpty(action.ReplaceString) || string.IsNullOrEmpty(action.SearchingString))
-				continue;
 			string fileString = _openFile(patch.Path);
 
+			if (action.SearchingString == string.Empty)
+			{
+				action.NewFile = action.ReplaceString;
+				continue;
+			}
 			action.NewFile = fileString.Replace(action.SearchingString, action.ReplaceString);
 		}
 

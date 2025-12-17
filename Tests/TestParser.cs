@@ -9,29 +9,18 @@ public class TestParser
 	{
 	}
 	
-	private string Open(string path)
+	private SearchParser GetSearchParser(string str, List<string> files, string fileContents)
 	{
-		return TestingStrings.TestFileContentsOne;
+		var fileHelper = new FileSystemHelper(fileContents);
+		return new SearchParser(str, files, fileHelper.Open, fileHelper.Write, fileHelper.Delete);
 	}
 
-	private void Write(string path, string write)
-	{
-	}
-	private void Delete(string path)
-	{
-	}
-	
-	private SearchParser GetSearchParser(string str, List<string> files)
-	{
-		return new SearchParser(str, files, Open, Write, Delete);
-	}
-
+	#region SearchParser
 	[Test]
+	[Category(nameof(SearchParser))]
 	public void ValidJson()
 	{
-		var searchParser = GetSearchParser(TestingStrings.TestingStringOne, ["main", "second"]);
-		Console.WriteLine($"testing string: {TestingStrings.TestingStringOne}");
-		Console.WriteLine($"personal lines: {searchParser.Lines.Count}");
+		var searchParser = GetSearchParser(TestingStrings.StandardPatchString, ["main", "second"], TestingStrings.StandardFileContents);
 		
 		try
 		{
@@ -39,8 +28,7 @@ public class TestParser
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);
-			Assert.Fail(e.ToString());
+			Assert.Fail($"There was an exception caught when running parsing: {e}");
 		}
 
 		foreach (var patchAction in searchParser.Patch.Actions)
@@ -50,11 +38,52 @@ public class TestParser
 		Assert.Pass($"There were no issues when parsing TestingStringOne");
 	}
 
-	[Test]
+	[Test(Description = "This is meant to fail, the console should display an index out of range exception.")]
+	[Category(nameof(SearchParser))]
 	public void InvalidJson()
 	{
-		string failString = "This string should make it fail.\n" + TestingStrings.TestingStringOne;
-		var searchParser = GetSearchParser(failString, ["main", "second"]);
+		string failString = "This string should make it fail.\n" + TestingStrings.StandardPatchString;
+		var searchParser = GetSearchParser(failString, ["main", "second"], TestingStrings.StandardFileContents);
+		
+		try
+		{
+			searchParser.Parse();
+		}
+		catch (Exception e)
+		{
+			Assert.Pass($"This should be Index was out of range: {e}");
+		}
+		
+		Assert.Fail($"This should not be a valid test.");
+	}
+	
+	[Test]
+	[Category(nameof(SearchParser))]
+	public void EmptySearchTest()
+	{
+		var searchParser = GetSearchParser(TestingStrings.EmptySearchPatch, ["main", "second"], TestingStrings.EmptyFileContents);
+		
+		try
+		{
+			searchParser.Parse();
+		}
+		catch (Exception e)
+		{
+			Assert.Fail($"There was an exception caught when running parsing: {e}");
+		}
+
+		foreach (var patchAction in searchParser.Patch.Actions)
+		{
+			Console.WriteLine($"actions: {patchAction.Type}    new file contents:\n{patchAction.NewFile}");
+		}
+		Assert.Pass($"There were no issues when parsing with an empty search string.");
+	}
+
+	[Test]
+	[Category(nameof(SearchParser))]
+	public void EmptyReplaceTest()
+	{
+		var searchParser = GetSearchParser(TestingStrings.EmptyReplacePatch, ["main", "second"], TestingStrings.StandardFileContents);
 		
 		try
 		{
@@ -63,10 +92,15 @@ public class TestParser
 		catch (Exception e)
 		{
 			Console.WriteLine(e);
-			Assert.Pass($"This should be Index was out of range: {e}");
+			Assert.Fail($"There was an exception caught when running parsing: {e}");
 		}
 
-		Console.WriteLine($"lines: {searchParser.IsValidPatch(TestingStrings.TestingStringOne, out string reason)}");
-		Assert.Fail($"This should fail the parsing's test.");
+		foreach (var patchAction in searchParser.Patch.Actions)
+		{
+			Console.WriteLine($"actions: {patchAction.Type}    new file contents:\n{patchAction.NewFile}");
+		}
+		Assert.Pass($"There were no issues when parsing with an empty replace string.");
 	}
+	
+	#endregion
 }

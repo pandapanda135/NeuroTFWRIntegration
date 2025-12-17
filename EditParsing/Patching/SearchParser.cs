@@ -57,8 +57,7 @@ public class SearchParser : Parser
 		// check if provided name is present
 		if (!ValidFileNames.Contains(ModifiedFilePath))
 		{
-			// return new();
-			throw new ParsingException("The provided file name was not valid.", ParsingErrors.InvalidFileName);
+			throw new ParsingException($"The provided file name was not valid, you provided: {ModifiedFilePath}", ParsingErrors.InvalidFileName);
 		}
 		
 		Logger.Info($"window name: {ModifiedFilePath}");
