@@ -31,16 +31,17 @@ public static class PatchActions
 
 		protected override ExecutionResult Validate(ActionJData actionData, out string parsedData)
 		{
-			parsedData = actionData.Data?.Value<string>("text");
-			if (parsedData is null)
+			string? patchText = actionData.Data?.Value<string>("text");
+			parsedData = "";
+			if (patchText is null)
 				return ExecutionResult.Failure($"You cannot provide a null value.");
 			
 			try
 			{
-				parsedData = parsedData.Replace("\\n", "\n");
-				parsedData = parsedData.Replace("\\t", "\t");
-				var parser = PatchingHelpers.GetParser(parsedData);
-				if (!parser.IsValidPatch(parsedData, out string reason))
+				patchText = patchText.Replace("\\n", "\n");
+				patchText = patchText.Replace("\\t", "\t");
+				var parser = PatchingHelpers.GetParser(patchText);
+				if (!parser.IsValidPatch(patchText, out string reason))
 				{
 					return ExecutionResult.Failure(
 						$"You provided an invalid patch, this is why it is invalid: {reason}");
@@ -53,11 +54,13 @@ public static class PatchActions
 					$"You made a mistake when writing this patch, this is the error message: {e.Message}");
 			}
 
+			parsedData = patchText;
 			return ExecutionResult.Success($"The patch is being inserted now.");
 		}
 
-		protected override void Execute(string parsedData)
+		protected override void Execute(string? parsedData)
 		{
+			if (parsedData is null) return;
 			Logger.Info($"running write execute");
 			var parser = PatchingHelpers.GetParser(parsedData);
 
@@ -126,7 +129,7 @@ public static class PatchActions
 		};
 		protected override ExecutionResult Validate(ActionJData actionData, out string parsedData)
 		{
-			string selectedWindow = actionData.Data?.Value<string>("window");
+			string? selectedWindow = actionData.Data?.Value<string>("window");
 
 			parsedData = "";
 			if (selectedWindow is null || !WorkspaceState.CodeWindows.ContainsKey(selectedWindow))
@@ -138,7 +141,7 @@ public static class PatchActions
 			return ExecutionResult.Success();
 		}
 
-		protected override void Execute(string parsedData)
+		protected override void Execute(string? parsedData)
 		{
 			var kvp = WorkspaceState.CodeWindows.First(kvp => kvp.Key == parsedData);
 			

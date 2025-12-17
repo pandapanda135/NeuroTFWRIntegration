@@ -30,7 +30,7 @@ public static class CodeWindowActions
 		};
 		protected override ExecutionResult Validate(ActionJData actionData, out string parsedData)
 		{
-			string name = actionData.Data?.Value<string>("name");
+			string? name = actionData.Data?.Value<string>("name");
 
 			parsedData = "";
 			if (string.IsNullOrEmpty(name))
@@ -47,7 +47,7 @@ public static class CodeWindowActions
 			return ExecutionResult.Success($"Created new window and called it {name}");
 		}
 
-		protected override void Execute(string parsedData)
+		protected override void Execute(string? parsedData)
 		{
 			ICollection<string> previousWindows = WorkspaceState.CodeWindows.Keys;
 			WorkspaceState.CurrentWorkspace.AddNewWindow();
@@ -109,7 +109,7 @@ public static class CodeWindowActions
 
 		protected override ExecutionResult Validate(ActionJData actionData, out CodeWindow parsedData)
 		{
-			string name = actionData.Data?.Value<string>("window");
+			string? name = actionData.Data?.Value<string>("window");
 			parsedData = new();
 			if (name is null) return ExecutionResult.Failure($"You must sent the name of window.");
 
@@ -119,8 +119,9 @@ public static class CodeWindowActions
 			return ExecutionResult.Success($"");
 		}
 
-		protected override void Execute(CodeWindow parsedData)
+		protected override void Execute(CodeWindow? parsedData)
 		{
+			if (parsedData is null) return;
 			parsedData.CodeInput.onSelect.Invoke("0");
 			RegisterSelectedWindow(parsedData);
 		}
@@ -144,7 +145,7 @@ public static class CodeWindowActions
 
 		protected override ExecutionResult Validate(ActionJData actionData, out CodeWindow parsedData)
 		{
-			string name = actionData.Data?.Value<string>("window");
+			string? name = actionData.Data?.Value<string>("window");
 			parsedData = new();
 			if (name is null) return ExecutionResult.Failure($"You must sent the name of window.");
 
@@ -154,9 +155,9 @@ public static class CodeWindowActions
 			return ExecutionResult.Success();
 		}
 
-		protected override void Execute(CodeWindow parsedData)
+		protected override void Execute(CodeWindow? parsedData)
 		{
-			parsedData.PressExecuteOrStop();
+			parsedData?.PressExecuteOrStop();
 			var window = ActionWindow.Create(WorkspaceState.Object);
 			window.AddAction(new GetWindows()).AddAction(new ExecuteWindow())
 				.AddAction(new SelectWindow());

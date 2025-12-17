@@ -2,11 +2,11 @@ using BepInEx.Configuration;
 
 namespace NeuroTFWRIntegration;
 
-public class ConfigBase<T>(ConfigDefinition section, T defaultValue, ConfigDescription description = null)
+public class ConfigBase<T>(ConfigDefinition section, T defaultValue, ConfigDescription? description = null)
 {
-	public ConfigEntry<T> BaseToEntry()
+	public ConfigEntry<T>? BaseToEntry()
 	{
-		return Plugin.Instance.Config.Bind(section, defaultValue, description);
+		return Plugin.Instance is null ? null : Plugin.Instance.Config.Bind(section, defaultValue, description);
 	}
 }
 

@@ -14,12 +14,12 @@ namespace NeuroTFWRIntegration;
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-	public static Plugin Instance { get; private set; }
+	public static Plugin? Instance { get; private set; }
 
-	private static ConfigEntry<string> _websocketUrl;
+	private static ConfigEntry<string>? _websocketUrl;
 
 	// here for future proofing
-	private static ConfigEntry<bool> _debug;
+	private static ConfigEntry<bool>? _debug;
 	
 	public Plugin()
 	{
@@ -32,9 +32,9 @@ public class Plugin : BaseUnityPlugin
 	private void Awake()
 	{
 		SetLogger(Logger);
-		if (_websocketUrl.Value != "")
+		if (_websocketUrl?.Value != "")
 		{
-			Environment.SetEnvironmentVariable("NEURO_SDK_WS_URL", _websocketUrl.Value);
+			Environment.SetEnvironmentVariable("NEURO_SDK_WS_URL", _websocketUrl?.Value);
 		}
 		
 		NeuroSdk.NeuroSdkSetup.Initialize("The Farmer Was Replaced");
