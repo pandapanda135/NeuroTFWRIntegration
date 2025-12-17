@@ -16,9 +16,9 @@ public static class PatchActions
 	public class WritePatch : NeuroAction<string>
 	{
 		public override string Name => "write_patch";
-
 		protected override string Description => "Write a patch to modify the code in this code window. The format is" +
-		                                         $"{PatchStrings.SearchParser.Length}";
+		                                         $"{(Plugin.Debug is not null && Plugin.Debug.Value
+			                                         ? "Debug is enabled so the format is not being sent." : PatchStrings.SearchParser)}";
 		protected override JsonSchema Schema => new()
 		{
 			Type = JsonSchemaType.Object,

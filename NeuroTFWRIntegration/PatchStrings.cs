@@ -2,13 +2,17 @@ namespace NeuroTFWRIntegration;
 
 public static class PatchStrings
 {
-	public const string SearchParser = """
-	                                   %%bash
-	                                   diff <<"EOF"
-	                                   [YOUR_DIFF]
-	                                   EOF
+	/**
+	   3. **Multiple Replacements**
+		  - A single file block may include multiple search/replace pairs, one after another, each using its own `<<<<<<< SEARCH … ======= … >>>>>>> REPLACE` section.
+		  - Edits are processed in the order they appear.*
+		  		  
+	   4. **Multiple Files**
+		  - You may include as many file blocks as needed in a single diff command. Each must begin with the file path on its own line, immediately followed by its fenced diff block.
 
-	                                   Where [YOUR_DIFF] consists of one or more file-scoped edit blocks. Each block begins with the path to the file to be edited, followed by a fenced diff block containing one or more search/replace sections.
+	 */
+	public const string SearchParser = """
+	                                   Where [YOUR_DIFF] consists of one or more file-scoped edit blocks. Each block begins with the path to the file to be edited, followed by a fenced diff block containing one sections.
 
 	                                   The syntax for each file edit block is:
 
@@ -29,18 +33,17 @@ public static class PatchStrings
 
 	                                   2. **Replacement Text**
 	                                      - The text between `=======` and `>>>>>>> REPLACE` becomes the new code that replaces the search block.
+	                                      
+	                                   4. **Single Replacement**
+	                                      - You can only send one search and replace count block in a single patch.
+	                                      
+	                                   3. **Single File**
+	                                      - You can only send one file at a single time.
 
-	                                   3. **Multiple Replacements**
-	                                      - A single file block may include multiple search/replace pairs, one after another, each using its own `<<<<<<< SEARCH … ======= … >>>>>>> REPLACE` section.
-	                                      - Edits are processed in the order they appear.
-
-	                                   4. **Multiple Files**
-	                                      - You may include as many file blocks as needed in a single diff command. Each must begin with the file path on its own line, immediately followed by its fenced diff block.
-
-	                                   5. **No Context Requirement**
+	                                   3. **No Context Requirement**
 	                                      - Unlike traditional patch formats, this diff format does *not* require context lines or line numbers. Only the exact search/replace texts are used.
 
-	                                   6. **Adding or Removing Code**
+	                                   4. **Adding or Removing Code**
 	                                      - To insert new code, use an empty SEARCH section:
 	                                        ```
 	                                        <<<<<<< SEARCH
@@ -59,13 +62,13 @@ public static class PatchStrings
 	                                   ### Example
 	                                   - This is what an example of what you should send in the json string
 
-	                                   mathweb/flask/app.py
+	                                   main
 	                                   ```
 	                                   <<<<<<< SEARCH
-	                                   from flask import Flask
+	                                   print("Neuro is very stinky.")
 	                                   =======
-	                                   import math
-	                                   from flask import Flask
+	                                   print("Neuro is very stinky, because she smells like a gymbag.")
+	                                   return 9 + 10
 	                                   >>>>>>> REPLACE
 	                                   ```
 
