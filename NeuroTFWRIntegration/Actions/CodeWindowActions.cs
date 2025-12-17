@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using EditParsing.Patching;
 using NeuroSdk.Actions;
 using NeuroSdk.Json;
 using NeuroSdk.Messages.Outgoing;
 using NeuroSdk.Websocket;
+using NeuroTFWRIntegration.Utilities.Patching;
 
 namespace NeuroTFWRIntegration.Actions;
 
@@ -80,8 +80,7 @@ public static class CodeWindowActions
 		public override string Name => "write_patch";
 
 		protected override string Description => "Write a patch to modify the code in this code window. The format is" +
-		                                         $"{PatchStrings.SearchParser}";
-
+		                                         $"{PatchStrings.SearchParser.Length}";
 		protected override JsonSchema Schema => new()
 		{
 			Type = JsonSchemaType.Object,
@@ -95,16 +94,18 @@ public static class CodeWindowActions
 		protected override ExecutionResult Validate(ActionJData actionData, out string parsedData)
 		{
 			parsedData = actionData.Data?.Value<string>("text");
-			if (parsedData is null) return ExecutionResult.Failure($"");
-
+			if (parsedData is null)
+				return ExecutionResult.Failure($"You cannot provide a null value.");
+			
 			try
 			{
 				parsedData = parsedData.Replace("\\n", "\n");
-				var parser = new SearchParser(parsedData, MainSim.Inst.workspace.codeWindows.Select(kvp => kvp.Key).ToList());
+				parsedData = parsedData.Replace("\\t", "\t");
+				var parser = PatchingHelpers.GetParser(parsedData);
 				if (!parser.IsValidPatch(parsedData, out string reason))
 				{
 					return ExecutionResult.Failure(
-						$"You provided an invalid patch string, this is why it is invalid: {reason}");
+						$"You provided an invalid patch, this is why it is invalid: {reason}");
 				}
 			}
 			catch (Exception e)
@@ -120,7 +121,7 @@ public static class CodeWindowActions
 		protected override void Execute(string parsedData)
 		{
 			Logger.Info($"running write execute");
-			var parser = new SearchParser(parsedData, MainSim.Inst.workspace.codeWindows.Select(kvp => kvp.Key).ToList());
+			var parser = PatchingHelpers.GetParser(parsedData);;
 
 			try
 			{
@@ -129,6 +130,8 @@ public static class CodeWindowActions
 			catch (Exception e)
 			{
 				Logger.Error($"What the fuck happened here: {e}");
+				Context.Send($"There was an error when trying to apply the patch you just sent, you should either," +
+				             $" tell the person you are playing with and see if they can help you or try something else.");
 				throw;
 			}
 

@@ -24,7 +24,7 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
         <PackageReference Include="TFWR.GameLibs" Version="1.0.1"/>
         <PackageReference Include="UnityEngine.Modules" Version="6000.0.43" IncludeAssets="compile"/>
-        <PackageReference Include="VedalAI.NeuroSdk.Unity" Version="2.0.0-pre.3"/>
+        <PackageReference Include="VedalAI.NeuroSdk.Unity" Version="2.0.0-pre.4" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
@@ -39,12 +39,19 @@
       <ProjectReference Include="..\EditParsing\EditParsing.csproj" />
     </ItemGroup>
 
+    <PropertyGroup>
+        <!-- I feel like this may already be a thing but I'm too lazy to look into it. -->
+        <BepinExPath>$(GamePath)/BepInEx/plugins/</BepinExPath>
+    </PropertyGroup>
     <Target Name="CopyPluginAfterBuild" AfterTargets="Build">
+        <ItemGroup>
+            <DllFiles Include="$(OutputPath)*.dll"/>
+        </ItemGroup>
+        
         <Copy
-                SourceFiles="$(TargetPath)"
-                DestinationFiles="$(GamePath)/BepInEx/plugins/$(TargetFileName)"
+                SourceFiles="@(DllFiles)"
+                DestinationFolder="$(BepinExPath)$(TargetName)"
                 OverwriteReadOnlyFiles="true"/>
-        <Message Text=">>> Finished copying plugin" Importance="high"/>
+        <Message Text="Finished copying all plugin files." Importance="high"/>
     </Target>
-
 </Project>
