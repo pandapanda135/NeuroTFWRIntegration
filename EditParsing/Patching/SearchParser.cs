@@ -43,7 +43,7 @@ public class SearchParser : Parser
 		return ParseInputPatch();
 	}
 
-	// public override List<CodeWindow> GetWindows(string text) => MainSim.Inst.workspace.codeWindows.Select(kvp =>
+	// public override List<CodeWindow> GetWindows(string text) => WorkspaceHelpers.CurrentWorkspace.codeWindows.Select(kvp =>
 	// 	kvp.Value).Where(window => text.Contains(window.fileName)).ToList();
 
 	protected override string GetPatchFile(List<string> patchText)

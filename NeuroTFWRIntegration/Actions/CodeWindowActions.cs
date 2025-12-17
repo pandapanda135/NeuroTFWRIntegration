@@ -1,17 +1,68 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NeuroSdk.Actions;
 using NeuroSdk.Json;
 using NeuroSdk.Messages.Outgoing;
 using NeuroSdk.Websocket;
-using NeuroTFWRIntegration.Utilities.Patching;
+using NeuroTFWRIntegration.Utilities;
 
 namespace NeuroTFWRIntegration.Actions;
 
 public static class CodeWindowActions
 {
-	// we probably don't need this anymore
+	public class CreateWindow : NeuroAction<string>
+	{
+		public override string Name => "create_window";
+		protected override string Description => "Create a window for you to code in.";
+		protected override JsonSchema Schema => new()
+		{
+			Type = JsonSchemaType.Object,
+			Required = ["name"],
+			Properties = new Dictionary<string, JsonSchema>
+			{
+				["name"] = new()
+				{
+					Type = JsonSchemaType.String,
+					MaxLength = 20,
+					MinLength = 0
+				}
+			}
+		};
+		protected override ExecutionResult Validate(ActionJData actionData, out string parsedData)
+		{
+			string name = actionData.Data?.Value<string>("name");
+
+			parsedData = "";
+			if (string.IsNullOrEmpty(name))
+				return ExecutionResult.Failure($"You must provide a value for the window's name.");
+
+			if (name.Length > 20)
+				return ExecutionResult.Failure($"The name cannot be greater than 20 characters in length.");
+
+			if (WorkspaceState.CodeWindows.ContainsKey(name))
+				return ExecutionResult.Failure($"This name is already used for an existing window.");
+			// we don't need to check if name is valid as it will change the window's name not file name if it is not valid.
+
+			parsedData = name;
+			return ExecutionResult.Success($"Created new window and called it {name}");
+		}
+
+		protected override void Execute(string parsedData)
+		{
+			ICollection<string> previousWindows = WorkspaceState.CodeWindows.Keys;
+			WorkspaceState.CurrentWorkspace.AddNewWindow();
+			foreach (var kvp in WorkspaceState.CodeWindows)
+			{
+				if (previousWindows.Contains(kvp.Key)) continue;
+				
+				Logger.Info($"renaming window: {kvp.Value.fileName}");
+				kvp.Value.Rename(parsedData);
+				break;
+			}
+		}
+	}
+	
+	// TODO: we probably don't need this anymore
 	public class GetWindows : NeuroAction
 	{
 		public override string Name => "get_code_windows";
@@ -26,14 +77,14 @@ public static class CodeWindowActions
 		protected override void Execute()
 		{
 			string contextString = $"These are the name's of the windows in this workspace:";
-			foreach (var window in MainSim.Inst.workspace.codeWindows)
+			foreach (var window in WorkspaceState.CurrentWorkspace.codeWindows)
 			{
 				contextString += $"\n{window.Key}";
 				Logger.Info($"windows: {window.Key}   {window.Value.CodeInput.text}");
 			}
 
 			Context.Send(contextString);
-			var w = ActionWindow.Create(MainSim.Inst.gameObject);
+			var w = ActionWindow.Create(WorkspaceState.Object);
 			w.AddAction(new GetWindows()).AddAction(new ExecuteWindow())
 				.AddAction(new SelectWindow());
 			w.Register();
@@ -51,7 +102,7 @@ public static class CodeWindowActions
 			Required = ["window"],
 			Properties = new Dictionary<string, JsonSchema>
 			{
-				["window"] = QJS.Enum(MainSim.Inst.workspace.codeWindows
+				["window"] = QJS.Enum(WorkspaceState.CurrentWorkspace.codeWindows
 					.Select(kvp => kvp.Key))
 			}
 		};
@@ -62,9 +113,9 @@ public static class CodeWindowActions
 			parsedData = new();
 			if (name is null) return ExecutionResult.Failure($"You must sent the name of window.");
 
-			if (!MainSim.Inst.workspace.codeWindows.ContainsKey(name))
+			if (!WorkspaceState.CurrentWorkspace.codeWindows.ContainsKey(name))
 				return ExecutionResult.Failure($"That is not a valid window");
-			parsedData = MainSim.Inst.workspace.codeWindows[name];
+			parsedData = WorkspaceState.CurrentWorkspace.codeWindows[name];
 			return ExecutionResult.Success($"");
 		}
 
@@ -72,72 +123,6 @@ public static class CodeWindowActions
 		{
 			parsedData.CodeInput.onSelect.Invoke("0");
 			RegisterSelectedWindow(parsedData);
-		}
-	}
-
-	private class WritePatch : NeuroAction<string>
-	{
-		public override string Name => "write_patch";
-
-		protected override string Description => "Write a patch to modify the code in this code window. The format is" +
-		                                         $"{PatchStrings.SearchParser.Length}";
-		protected override JsonSchema Schema => new()
-		{
-			Type = JsonSchemaType.Object,
-			Required = ["text"],
-			Properties = new Dictionary<string, JsonSchema>
-			{
-				["text"] = QJS.Type(JsonSchemaType.String)
-			}
-		};
-
-		protected override ExecutionResult Validate(ActionJData actionData, out string parsedData)
-		{
-			parsedData = actionData.Data?.Value<string>("text");
-			if (parsedData is null)
-				return ExecutionResult.Failure($"You cannot provide a null value.");
-			
-			try
-			{
-				parsedData = parsedData.Replace("\\n", "\n");
-				parsedData = parsedData.Replace("\\t", "\t");
-				var parser = PatchingHelpers.GetParser(parsedData);
-				if (!parser.IsValidPatch(parsedData, out string reason))
-				{
-					return ExecutionResult.Failure(
-						$"You provided an invalid patch, this is why it is invalid: {reason}");
-				}
-			}
-			catch (Exception e)
-			{
-				Logger.Error($"Write patch validation error: {e}");
-				return ExecutionResult.Failure(
-					$"You made a mistake when writing this patch, this is the error message: {e.Message}");
-			}
-
-			return ExecutionResult.Success($"The patch is being inserted now.");
-		}
-
-		protected override void Execute(string parsedData)
-		{
-			Logger.Info($"running write execute");
-			var parser = PatchingHelpers.GetParser(parsedData);;
-
-			try
-			{
-				parser.Parse();
-			}
-			catch (Exception e)
-			{
-				Logger.Error($"What the fuck happened here: {e}");
-				Context.Send($"There was an error when trying to apply the patch you just sent, you should either," +
-				             $" tell the person you are playing with and see if they can help you or try something else.");
-				throw;
-			}
-
-			var window = ActionWindow.Create(MainSim.Inst.gameObject);
-			window.AddAction(new GetWindows()).AddAction(new ExecuteWindow()).AddAction(new SelectWindow());
-			window.Register();
 		}
 	}
 
@@ -152,7 +137,7 @@ public static class CodeWindowActions
 			Required = ["window"],
 			Properties = new Dictionary<string, JsonSchema>
 			{
-				["window"] = QJS.Enum(MainSim.Inst.workspace.codeWindows
+				["window"] = QJS.Enum(WorkspaceState.CurrentWorkspace.codeWindows
 					.Select(kvp => kvp.Key))
 			}
 		};
@@ -163,31 +148,28 @@ public static class CodeWindowActions
 			parsedData = new();
 			if (name is null) return ExecutionResult.Failure($"You must sent the name of window.");
 
-			if (!MainSim.Inst.workspace.codeWindows.ContainsKey(name))
+			if (!WorkspaceState.CurrentWorkspace.codeWindows.ContainsKey(name))
 				return ExecutionResult.Failure($"That is not a valid window");
-			parsedData = MainSim.Inst.workspace.codeWindows[name];
+			parsedData = WorkspaceState.CurrentWorkspace.codeWindows[name];
 			return ExecutionResult.Success();
 		}
 
 		protected override void Execute(CodeWindow parsedData)
 		{
 			parsedData.PressExecuteOrStop();
-			var window = ActionWindow.Create(MainSim.Inst.gameObject);
-			window.AddAction(new CodeWindowActions.GetWindows()).AddAction(new CodeWindowActions.ExecuteWindow())
-				.AddAction(new CodeWindowActions.SelectWindow());
+			var window = ActionWindow.Create(WorkspaceState.Object);
+			window.AddAction(new GetWindows()).AddAction(new ExecuteWindow())
+				.AddAction(new SelectWindow());
 			window.Register();
 		}
 	}
-
-	private static CodeWindow _window;
-
+	
 	private static void RegisterSelectedWindow(CodeWindow codeWindow)
 	{
-		_window = codeWindow;
-		var window = ActionWindow.Create(MainSim.Inst.gameObject);
+		var window = ActionWindow.Create(WorkspaceState.Object);
 		window.SetForce(0, $"You are interacting with a window with the name of {codeWindow.fileName}",
 			$"This is the code of this window: {codeWindow.CodeInput.text}", true);
-		window.AddAction(new WritePatch());
+		// window.AddAction(new WritePatch());
 		// window.AddAction(new ExecuteWindow());
 		window.Register();
 	}
