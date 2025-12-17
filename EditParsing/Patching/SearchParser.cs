@@ -21,16 +21,15 @@ public class SearchParser : Parser
 	// print("This is a test")
 	// >>>>>>> REPLACE
 	// ```
-	public SearchParser(string patchPatchString, List<string> fileNames,
+	public SearchParser(string patchString, List<string> fileNames,
 		FileHelpers.OpenFile open, FileHelpers.WriteFile write, FileHelpers.DeleteFile delete)
-		: base(patchPatchString, fileNames, open, write, delete)
+		: base(patchString, fileNames, open, write, delete)
 	{
-		StartPatch = "'''";
+		StartPatch = "```";
 		SearchPatch = "<<<<<<< SEARCH";
 		SeparatePatch = "=======";
 		ReplacePatch = ">>>>>>> REPLACE";
-		// IDK if this should actually be used or just stop after REPLACE (We probably want to use this)
-		EndPatch = "\'\'\'";
+		EndPatch = "```";
 	}
 
 	protected override bool IsDone()
@@ -65,47 +64,56 @@ public class SearchParser : Parser
 		Logger.Info($"window name: {ModifiedFilePath}");
 
 		Patch patch = new(ModifiedFilePath, []);
+		PatchAction patchAction = new(ChangeType.Change);
 		// Is done and read string uses Lines which is window text not patch text. 
 		while (!IsDone())
 		{
 			Logger.Info($"starting is done loop: {CurrentLine}");
 			// start
-			if (ReadString(StartPatch, out _))
+			if (ReadString(StartPatch, out var next))
 			{
-				continue;
+				// if this is not here, end patch will trigger here.
+				if (next == SearchPatch) continue;
+				
+				// read string increases so we need to decrease for EndPatch.
+				Index--;
 			}
 
 			// this is the text to search for.
-			// TODO: implement
-			if (ReadString(SearchPatch, out var line))
+			if (ReadString(SearchPatch, out _))
 			{
-				Logger.Info($"search patch found: {line}");
+				List<string> searchLines = [];
+				var nextSymbolIndex = Lines.IndexOf(SeparatePatch);
+				for (int i = Index; i < nextSymbolIndex; i++)
+				{
+					Logger.Info($"searching text lines: {CurrentLine}");
+					searchLines.Add(CurrentLine);
+					Index++;
+				}
+				
+				patchAction.SearchingString = string.Join("\n", searchLines);
 				continue;
 			}
 
 			// separate patch, this is for the text to add.
-			if (ReadString(SeparatePatch, out var separate))
+			if (ReadString(SeparatePatch, out _))
 			{
-				Logger.Info($"separate patch line: {separate}");
 				List<string> lines = [];
-				while (!ReadString(ReplacePatch, out _))
+				var nextSymbolIndex = Lines.IndexOf(ReplacePatch);
+				for (int i = Index; i < nextSymbolIndex; i++)
 				{
+					Logger.Info($"searching text lines: {CurrentLine}");
 					lines.Add(CurrentLine);
 					Index++;
 				}
-
-				Logger.Info($"after while in separate");
-
-				PatchAction patchAction = new(ChangeType.Change, string.Join("\n", lines));
+				
+				patchAction.ReplaceString = string.Join("\n", lines);
 				patch.Actions.Add(patchAction);
-				Logger.Info($"after setting patch action");
 			}
 
-			// anything past this doesn't do anything
 			// replace patch
 			if (ReadString(ReplacePatch, out var end))
 			{
-				Logger.Info($"found replace");
 				if (end != EndPatch)
 					throw new ParsingException("A valid end patch line was not provided after the replace symbols.",
 						ParsingErrors.ParsingIssue);
@@ -119,7 +127,6 @@ public class SearchParser : Parser
 				if (empty != "")
 					throw new ParsingException("The patch continued after the end patch symbol",
 						ParsingErrors.ParsingIssue);
-				Logger.Info($"patch actions amount: {patch.Actions.Count}");
 				return patch;
 			}
 

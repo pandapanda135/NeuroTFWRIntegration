@@ -12,24 +12,36 @@ public class PatchAction
 		Type = type;
 	}
 
-	public PatchAction(ChangeType type, string newFile)
+	public PatchAction(ChangeType type,string replaceString, string searchingString)
 	{
 		Type = type;
-		NewFile = newFile;
+		ReplaceString = replaceString;
+		SearchingString = searchingString;
 	}
-
-	public PatchAction(ChangeType type, List<Chunk> chunks)
+	
+	public PatchAction(ChangeType type, List<Chunk> chunks, string searchingString)
 	{
 		Type = type;
 		Chunks = chunks;
+		SearchingString = searchingString;
 	}
 
-	public ChangeType Type;
+	public readonly ChangeType Type;
 
 	/// <summary>
 	/// This is what the new file will be
 	/// </summary>
 	public string NewFile = "";
+	
+	/// <summary>
+	/// The string to search for in the file.
+	/// </summary>
+	public string SearchingString = "";
+	
+	/// <summary>
+	/// The string that will replace the searching string.
+	/// </summary>
+	public string ReplaceString = "";
 
-	public List<Chunk> Chunks;
+	public List<Chunk> Chunks = [];
 }

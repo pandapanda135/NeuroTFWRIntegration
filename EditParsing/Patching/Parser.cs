@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace EditParsing.Patching;
@@ -38,7 +37,6 @@ public abstract class Parser
 		_openFile = openFile;
 		_writeFile = writeFile;
 		_deleteFile = deleteFile;
-
 	}
 	// protected List<CodeWindow> CurrentWindows;
 
@@ -53,26 +51,26 @@ public abstract class Parser
 	/// <summary>
 	/// This is for the path sent in a patch.
 	/// </summary>
-	protected string ModifiedFilePath;
+	protected string ModifiedFilePath = "";
 
-	protected string StartPatch;
-	protected string SeparatePatch;
-	protected string EndPatch;
+	protected string StartPatch = "";
+	protected string SeparatePatch = "";
+	protected string EndPatch = "";
 
 	// yes the key code is ugly but it works
 	/// <summary>
 	/// The part of file to look for. in search and replace this would be "&lt;&lt;&lt;&lt;&lt;&lt; SEARCH"
 	/// </summary>
-	protected string SearchPatch;
+	protected string SearchPatch = "";
 
 	/// <summary>
 	/// The end of replacing, in search and replace this would be ">>>>>>> REPLACE"
 	/// </summary>
-	protected string ReplacePatch;
+	protected string ReplacePatch = "";
 
 	// these will not be used in search replace format.
-	protected string NewLineSymbol;
-	protected string RemoveLineSymbol;
+	protected string NewLineSymbol = "";
+	protected string RemoveLineSymbol = "";
 
 	#endregion
 
@@ -93,13 +91,6 @@ public abstract class Parser
 
 	protected int Index;
 
-	// this is for getting the file that gets updated I think?????
-	// maybe don't need and can remove?
-	public string GetUpdatedFile(string fileText, Patch patch)
-	{
-		return "";
-	}
-
 	#region ImplementedHelpers
 
 	/// <summary>
@@ -109,7 +100,7 @@ public abstract class Parser
 	/// <exception cref="IndexOutOfRangeException"></exception>
 	private string GetCurrentLine()
 	{
-		if (Index > Lines.Count) throw new IndexOutOfRangeException();
+		if (Index >= Lines.Count) throw new IndexOutOfRangeException("The parser's index was greater than the line count.");
 		return Lines[Index];
 	}
 
@@ -122,17 +113,21 @@ public abstract class Parser
 		line = "";
 		if (!CurrentLine.Contains(patchFormat)) return false;
 
+		string currentLine = CurrentLine;
 		Index++;
 		// could throw an error if index is out of bounds
 		try
 		{
-			line = GetCurrentLine();
+			line = CurrentLine;
 		}
 		catch (Exception e)
 		{
-			Logger.Error($"Index was out of bounds? {e}");
 			line = "";
-			// return true;
+			// This could cause issues with formats other than SearchParser, but it is the only decent solution I can think of right now. 
+			if (currentLine == EndPatch)
+				return true;
+			
+			Logger.Error($"Index was out of bounds {e}");
 			throw;
 		}
 		Logger.Info($"read string line: {line}");
@@ -156,6 +151,15 @@ public abstract class Parser
 	{
 		return Lines[Index++];
 	}
+	
+	/// <summary>
+	/// Split a string into it's individual lines.
+	/// </summary>
+	/// <returns></returns>
+	protected static List<string> GetLines(string text)
+	{
+		return text.Split("\n").ToList();
+	}
 
 	private void ParsePatchString(string patchString)
 	{
@@ -174,6 +178,7 @@ public abstract class Parser
 				ParsingErrors.InvalidFileName);
 		}
 		
+		
 		try
 		{
 			Patch = ParseInputPatch();
@@ -183,6 +188,29 @@ public abstract class Parser
 			Logger.Error($"There was an error when parsing: {e}");
 			throw;
 		}
+		
+		if (Patch.Actions.Any(action => !_openFile(ModifiedFilePath).Contains(action.SearchingString)))
+		{
+			throw new ParsingException("The file you provided does not contain the contents you are searching for.", ParsingErrors.InvalidFileName);
+		}
+	}
+
+	/// <summary>
+	/// This will add the whole corrected file to the patch's NewFile.
+	/// </summary>
+	/// <param name="patch">The patch you want to modify.</param>
+	private Patch CreatePatchNewFile(Patch patch)
+	{
+		foreach (var action in patch.Actions)
+		{
+			if (string.IsNullOrEmpty(action.ReplaceString) || string.IsNullOrEmpty(action.SearchingString))
+				continue;
+			string fileString = _openFile(patch.Path);
+
+			action.NewFile = fileString.Replace(action.SearchingString, action.ReplaceString);
+		}
+
+		return patch;
 	}
 
 	#endregion
@@ -233,14 +261,15 @@ public abstract class Parser
 			Logger.Error($"There was an issue parsing: {e}");
 			throw;
 		}
+		
+		Patch = CreatePatchNewFile(Patch);
 
 		Commit commit = CreateCommitFromPatch(Patch);
 
 		ApplyCommit(commit);
 	}
 	
-	
-	public bool IsValidPatch(string patchString, out string reason)
+	public bool IsValidPatch(string patchString, out string failureReason)
 	{
 		try
 		{
@@ -249,29 +278,16 @@ public abstract class Parser
 		catch (Exception e)
 		{
 			Logger.Error($"Invalid patch string: {e}");
-			reason = e.Message;
+			failureReason = e.Message;
 			return false;
 		}
 
-		reason = "";
+		failureReason = "";
 		return true;
 	}
 	
 	#endregion
 	
-	#region Window
-
-	/// <summary>
-	/// Split a string into it's individual lines.
-	/// </summary>
-	/// <returns></returns>
-	protected static List<string> GetLines(string text)
-	{
-		return text.Split("\n").ToList();
-	}
-
-	#endregion
-
 	#region CommitCreation
 
 	private Commit CreateCommitFromPatch(Patch patch)
@@ -311,13 +327,23 @@ public abstract class Parser
 		foreach (var change in commit.Changes)
 		{
 			string path = change.Key;
-
+			if (string.IsNullOrEmpty(path))
+				throw new ParsingException("The path for this commit was either empty or null",ParsingErrors.MissingCommitContent);
 			switch (change.Value.Type)
 			{
 				case ChangeType.Add:
+					if (change.Value.NewContext is null)
+						throw new ParsingException("The new context was missing from this commit.",ParsingErrors.MissingCommitContent);
 					_writeFile(path, change.Value.NewContext);
 					break;
 				case ChangeType.Change:
+					if (change.Value.NewContext is null)
+						throw new ParsingException("The new context was missing from this commit.",ParsingErrors.MissingCommitContent);
+					// we don't need this any more, gonna keep until proper testing is done. 
+					
+					// not tested. need to get search
+					// This should be searchLines as a string from searchParser I think.
+					// var content = change.Value.OldContent.Replace(change.Value.NewContext);
 					_writeFile(path, change.Value.NewContext);
 					break;
 				case ChangeType.Delete:
@@ -338,6 +364,7 @@ public enum ParsingErrors
 {
 	InvalidFileName,
 	ParsingIssue,
+	MissingCommitContent,
 }
 
 public class ParsingException(string message, ParsingErrors reason) : Exception

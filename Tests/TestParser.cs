@@ -9,18 +9,16 @@ public class TestParser
 	{
 	}
 	
-	public string Open(string path)
+	private string Open(string path)
 	{
-		return "This is fake file contents";
+		return TestingStrings.TestFileContentsOne;
 	}
 
-	public void Write(string path, string write)
+	private void Write(string path, string write)
 	{
-		return;
 	}
-	public void Delete(string path)
+	private void Delete(string path)
 	{
-		return;
 	}
 	
 	private SearchParser GetSearchParser(string str, List<string> files)
@@ -56,7 +54,7 @@ public class TestParser
 	public void InvalidJson()
 	{
 		string failString = "This string should make it fail.\n" + TestingStrings.TestingStringOne;
-		var searchParser = GetSearchParser(TestingStrings.TestingStringOne, ["main", "second"]);
+		var searchParser = GetSearchParser(failString, ["main", "second"]);
 		
 		try
 		{
