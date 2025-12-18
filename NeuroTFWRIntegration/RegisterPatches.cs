@@ -85,5 +85,25 @@ public static class RegisterPatches
 		RegisterMainActions.RegisterMain();
 	} 
 	
-	// TODO: send context when upgrade is unlocked
+	[HarmonyPatch(typeof(UnlockBox), nameof(UnlockBox.ButtonClicked))]
+	[HarmonyPostfix]
+	public static void PostUnlockBox(UnlockBox __instance)
+	{
+		if (Plugin.ResearchMenuActions is not null && Plugin.ResearchMenuActions.Value) return;
+
+		// this will happen if the item is maxed 
+		if (WorkspaceState.Sim.sim.farm.GetUnlockCost(__instance.unlockSO) == null ||
+		    WorkspaceState.Sim.sim.farm.GetUnlockCost(__instance.unlockSO) == ItemBlock.CreateEmpty()) return;
+		
+		// this is for upgrades, we also use this to check if a button that cannot be bought is still clicked.
+		if (__instance.NumUnlocked() == __instance.prevNumUnlocked) return;
+
+		if (__instance.prevNumUnlocked != 0)
+		{
+			Context.Send($"{__instance.unlockSO.unlockName} was upgraded to level {__instance.NumUnlocked()}");
+			return;
+		}
+		
+		Context.Send($"{__instance.unlockSO.unlockName} was unlocked.");
+	}
 }
