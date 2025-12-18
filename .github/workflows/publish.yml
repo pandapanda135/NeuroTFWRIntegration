@@ -34,7 +34,7 @@ jobs:
         run: cd neuro-sdk
 
       - name: get branches
-        run: git fetch -all
+        run: git fetch --all
 
       - name: switch branch
         run: git switch inline-nativewebsocket
