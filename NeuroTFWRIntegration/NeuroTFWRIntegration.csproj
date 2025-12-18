@@ -40,7 +40,8 @@
         <!-- I feel like this may already be a thing but I'm too lazy to look into it. -->
         <BepinExPath>$(GamePath)/BepInEx/plugins/</BepinExPath>
     </PropertyGroup>
-    <Target Name="CopyPluginAfterBuild" AfterTargets="Build">
+    <!--    Causes issues with github actions-->
+    <Target Name="CopyPluginAfterBuild" AfterTargets="Build"  Condition="$(GITHUB_ACTIONS)' != 'true">
         <ItemGroup>
             <DllFiles Include="$(OutputPath)*.dll"/>
         </ItemGroup>
