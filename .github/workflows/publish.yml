@@ -36,6 +36,9 @@ jobs:
       - name: get branches
         run: git fetch --all
 
+      - name: pull all
+        run: git pull --all
+
       - name: switch branch
         run: git switch inline-nativewebsocket
 
