@@ -9,7 +9,10 @@ This is an integration for the game [The Farmer Was Replaced](https://store.stea
 
 ## Building
 
-After pulling from this repo, the only steps you should need are to get the project's dependencies and to set GamePath in NeuroTFWRIntegration to the game's folder. (The folder containing the exe file to run the game.)
+After pulling from this repo, the only steps you should need to do are to restore the project's dependencies and to set GamePath in NeuroTFWRIntegration to the game's folder. (The folder containing the exe file to run the game.)
+
+You may also have to change the SdkSetup file in the sdk to use Internal.ResourceManager as both the game and the sdk have a resource manager and I don't know how to make fix the sdk using the game's instead of it's own. Please help if you know how, I have wasted more hours than I would like to admit trying to fix it.
+
 Sorry if there is more you need to do, I'm a bit too lazy to set it up again to check if I'm right.
 
 ## Other stuff
