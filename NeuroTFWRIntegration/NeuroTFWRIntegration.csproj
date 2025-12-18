@@ -25,7 +25,7 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
         <PackageReference Include="TFWR.GameLibs" Version="1.0.2"/>
         <PackageReference Include="UnityEngine.Modules" Version="6000.0.43" IncludeAssets="compile"/>
-        <PackageReference Include="VedalAI.NeuroSdk.Unity" Version="2.0.0-pre.4" Aliases="NeuroSDK"/>
+        <PackageReference Include="VedalAI.NeuroSdk.Unity" Version="2.0.0-pre.4" Condition="$(GITHUB_ACTIONS != true)"/>
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
@@ -34,6 +34,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\EditParsing\EditParsing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="lib/NeuroSdk.dll" Condition="$(GITHUB_ACTIONS) == true"/>
     </ItemGroup>
 
     <PropertyGroup>
