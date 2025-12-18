@@ -33,8 +33,11 @@ jobs:
       - name: enter
         run: cd neuro-sdk
 
-      - name: change branch
-        run: git checkout inline-nativewebsocket
+      - name: get branches
+        run: git fetch -all
+
+      - name: switch branch
+        run: git switch inline-nativewebsocket
 
       - name: enter SDK
         run: cd neuro-sdk/Unity/NuGet
