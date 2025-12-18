@@ -41,7 +41,7 @@
         <BepinExPath>$(GamePath)/BepInEx/plugins/</BepinExPath>
     </PropertyGroup>
     <!--    Causes issues with github actions-->
-    <Target Name="CopyPluginAfterBuild" AfterTargets="Build"  Condition="$(GITHUB_ACTIONS)' != 'true">
+    <Target Name="CopyPluginAfterBuild" AfterTargets="Build"  Condition="$(GITHUB_ACTIONS) != true">
         <ItemGroup>
             <DllFiles Include="$(OutputPath)*.dll"/>
         </ItemGroup>
