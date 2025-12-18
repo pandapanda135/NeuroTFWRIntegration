@@ -2,6 +2,7 @@ namespace NeuroTFWRIntegration;
 
 public static class PatchStrings
 {
+	// TODO: these cannot be implemented with the current parser, don't really need them right now though.
 	/**
 	   3. **Multiple Replacements**
 		  - A single file block may include multiple search/replace pairs, one after another, each using its own `<<<<<<< SEARCH … ======= … >>>>>>> REPLACE` section.
@@ -44,6 +45,7 @@ public static class PatchStrings
 	                                      - Unlike traditional patch formats, this diff format does *not* require context lines or line numbers. Only the exact search/replace texts are used.
 
 	                                   4. **Adding or Removing Code**
+	                                      - If a file already contains code and the search is empty, the whole file will be replaced with the replace section so be careful
 	                                      - To insert new code, use an empty SEARCH section:
 	                                        ```
 	                                        <<<<<<< SEARCH

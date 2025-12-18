@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NeuroSdk.Actions;
@@ -43,6 +44,8 @@ public static class CodeWindowActions
 				return ExecutionResult.Failure($"This name is already used for an existing window.");
 			// we don't need to check if name is valid as it will change the window's name not file name if it is not valid.
 
+			// we unregister in case she tries to do another action before the window is created. This will get registered again in the create code window patch
+			RegisterMainActions.UnregisterMain();
 			parsedData = name;
 			return ExecutionResult.Success($"Created new window and called it {name}");
 		}
@@ -63,6 +66,7 @@ public static class CodeWindowActions
 	}
 	
 	// TODO: we probably don't need this anymore
+	[Obsolete]
 	public class GetWindows : NeuroAction
 	{
 		public override string Name => "get_code_windows";
@@ -84,13 +88,10 @@ public static class CodeWindowActions
 			}
 
 			Context.Send(contextString);
-			var w = ActionWindow.Create(WorkspaceState.Object);
-			w.AddAction(new GetWindows()).AddAction(new ExecuteWindow())
-				.AddAction(new SelectWindow());
-			w.Register();
 		}
 	}
 
+	[Obsolete]
 	public class SelectWindow : NeuroAction<CodeWindow>
 	{
 		public override string Name => "select_window";
@@ -159,8 +160,8 @@ public static class CodeWindowActions
 		{
 			parsedData?.PressExecuteOrStop();
 			var window = ActionWindow.Create(WorkspaceState.Object);
-			window.AddAction(new GetWindows()).AddAction(new ExecuteWindow())
-				.AddAction(new SelectWindow());
+			// window.AddAction(new GetWindows()).AddAction(new ExecuteWindow())
+			// 	.AddAction(new SelectWindow());
 			window.Register();
 		}
 	}

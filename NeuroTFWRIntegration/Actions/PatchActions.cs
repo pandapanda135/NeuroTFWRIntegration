@@ -40,7 +40,7 @@ public static class PatchActions
 			{
 				patchText = patchText.Replace("\\n", "\n");
 				patchText = patchText.Replace("\\t", "\t");
-				var parser = PatchingHelpers.GetParser(patchText);
+				var parser = PatchHelpers.GetParser(patchText);
 				if (!parser.IsValidPatch(patchText, out string reason))
 				{
 					return ExecutionResult.Failure(
@@ -62,7 +62,7 @@ public static class PatchActions
 		{
 			if (parsedData is null) return;
 			Logger.Info($"running write execute");
-			var parser = PatchingHelpers.GetParser(parsedData);
+			var parser = PatchHelpers.GetParser(parsedData);
 
 			try
 			{
@@ -75,10 +75,6 @@ public static class PatchActions
 				             $" tell the person you are playing with and see if they can help you or try something else.");
 				throw;
 			}
-
-			var window = ActionWindow.Create(WorkspaceState.Object);
-			window.AddAction(new CodeWindowActions.GetWindows()).AddAction(new CodeWindowActions.ExecuteWindow()).AddAction(new CodeWindowActions.SelectWindow());
-			window.Register();
 		}
 	}
 
@@ -124,7 +120,7 @@ public static class PatchActions
 			Required = ["window"],
 			Properties = new Dictionary<string, JsonSchema>
 			{
-				["window"] = QJS.Enum(WorkspaceState.CodeWindows.Select(kvp => kvp.Key))
+				["window"] = QJS.Enum(WorkspaceState.CodeWindows.Select(kvp => kvp.Value.fileNameText.text))
 			}
 		};
 		protected override ExecutionResult Validate(ActionJData actionData, out string parsedData)

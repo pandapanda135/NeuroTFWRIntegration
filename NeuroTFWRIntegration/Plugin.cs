@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
-using NeuroSdk.Actions;
 using NeuroTFWRIntegration.Actions;
-using NeuroTFWRIntegration.Utilities;
 using UnityEngine;
 using static NeuroTFWRIntegration.Logger;
 
@@ -17,6 +14,8 @@ public class Plugin : BaseUnityPlugin
 	public static Plugin? Instance { get; private set; }
 
 	private static ConfigEntry<string>? _websocketUrl;
+	
+	public static ConfigEntry<bool>? ResearchMenuActions;
 
 	public static ConfigEntry<bool>? Debug;
 	
@@ -25,6 +24,7 @@ public class Plugin : BaseUnityPlugin
 		Instance = this;
 		
 		_websocketUrl = ConfigStrings.WebsocketUrl.BaseToEntry();
+		ResearchMenuActions = ConfigStrings.ResearchMenuActions.BaseToEntry();
 		Debug = ConfigStrings.Debug.BaseToEntry();
 	}
 
@@ -45,9 +45,8 @@ public class Plugin : BaseUnityPlugin
 	{
 		if (UnityInput.Current.GetKey(KeyCode.F))
 		{
-			var window = ActionWindow.Create(WorkspaceState.Object);
-			window.AddAction(new CodeWindowActions.SelectWindow());
-			window.Register();
+			RegisterMainActions.UnregisterMain();
+			RegisterMainActions.RegisterMain();
 		}
 	}
 }

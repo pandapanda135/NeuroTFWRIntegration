@@ -1,5 +1,12 @@
+using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
+using NeuroSdk.Actions;
+using NeuroSdk.Messages.Outgoing;
 using NeuroTFWRIntegration.Actions;
+using NeuroTFWRIntegration.Utilities;
+using Unity.Profiling;
+using Unity.Properties;
 
 namespace NeuroTFWRIntegration;
 
@@ -7,7 +14,7 @@ public static class RegisterPatches
 {
 	[HarmonyPatch(typeof(Menu), nameof(Menu.Play))]
 	[HarmonyPrefix]
-	public static void StartPrefix()
+	public static void CloseMenuPrefix()
 	{
 		Logger.Info($"pressed play");
 		RegisterMainActions.RegisterMain();
@@ -15,23 +22,68 @@ public static class RegisterPatches
 	
 	[HarmonyPatch(typeof(Menu), nameof(Menu.Open))]
 	[HarmonyPrefix]
-	public static void OpenMenu()
+	public static void OpenMenuPrefix()
 	{
 		Logger.Info($"opened menu");
 		RegisterMainActions.UnregisterMain();
 	}
-
+	
 	[HarmonyPatch(typeof(ResearchMenu), nameof(ResearchMenu.OpenCloseMenu))]
 	[HarmonyPrefix]
 	public static void SetupResearchMenu()
 	{
-		Logger.Warning($"setup research");
-		if (MainSim.Inst.researchMenu.IsOpen)
+		Logger.Info($"setup research");
+		if (WorkspaceState.Sim.researchMenu.IsOpen)
 		{
 			RegisterMainActions.RegisterMain();
 			return;
 		}
 		
 		RegisterMainActions.UnregisterMain();
+		
+		Logger.Info($"docs: {string.Join("\n",WorkspaceState.Sim.researchMenu.allBoxes.Select(box => box.Value.unlockSO.docs))}");
+		
+		string getBoxesText = string.Join("\n", WorkspaceState.Sim.researchMenu.allBoxes
+			.Where(kvp => kvp.Value.unlockState is UnlockBox.UnlockState.Unlockable or UnlockBox.UnlockState.Upgradable)
+			.Select<KeyValuePair<string, UnlockBox>, string>(kvp =>
+			{
+				string text = $"## {kvp.Value.unlockSO.unlockName}\n### {(kvp.Value.unlockState is UnlockBox.UnlockState.Upgradable ? "Upgrade Cost" : "Unlock Cost")}";
+				foreach (var item in kvp.Value.unlockSO.unlockCost.serializeList)
+				{
+					text += $"\n- {item.name} amount: {item.nr}";
+				}
+
+				if (!string.IsNullOrEmpty(kvp.Value.unlockSO.docs))
+				{
+					text += $"\n### Docs Path\n {kvp.Value.unlockSO.docs}";
+				}
+				
+				return text;
+			})
+		);
+		if (Plugin.ResearchMenuActions is not null && !Plugin.ResearchMenuActions.Value)
+		{
+			Context.Send($"# Available Upgrades\n{getBoxesText}");
+			return;
+		}
+
+		var window = ActionWindow.Create(WorkspaceState.Object);
+		window.AddAction(new ResearchActions.BuyUpgrade());
+		window.SetForce(0, "You are now in the research menu where you can buy upgrades to help you.",
+			$"# Possible Upgrades\n{getBoxesText}", true);
+		window.Register();
 	}
+
+	/// <summary>
+	/// When a code window is created, we unregister and register the actions to update schemas
+	/// </summary>
+	[HarmonyPatch(typeof(Workspace), nameof(Workspace.OpenCodeWindow))]
+	[HarmonyPostfix]
+	public static void PostCreateCodeWindow()
+	{
+		RegisterMainActions.UnregisterMain();
+		RegisterMainActions.RegisterMain();
+	} 
+	
+	// TODO: send context when upgrade is unlocked
 }
