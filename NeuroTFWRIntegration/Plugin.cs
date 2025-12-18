@@ -8,7 +8,7 @@ using static NeuroTFWRIntegration.Logger;
 
 namespace NeuroTFWRIntegration;
 
-[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInPlugin(LocalPluginInfo.PLUGIN_GUID, LocalPluginInfo.PLUGIN_NAME, LocalPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
 	public static Plugin? Instance { get; private set; }
