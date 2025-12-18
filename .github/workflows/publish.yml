@@ -1,0 +1,39 @@
+name: Publish to GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+        tag:
+          description: 'Release tag (e.g. v1.2.3)'
+          required: true
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: restore
+        run: dotnet restore
+
+      - name: build
+          run: dotnet publish -c Release -o out
+
+      - name: test
+        run: dotnet test -c Release --no-build --verbosity normal
+
+      - name: public release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create $RELEASE_TAG out/*.dll
