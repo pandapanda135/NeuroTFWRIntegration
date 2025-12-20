@@ -10,6 +10,9 @@ on:
           description: 'Release tag (e.g. v1.2.3)'
           required: true
 
+permissions:
+  contents: write
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
@@ -24,16 +27,43 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      # - name: restore
-      #   run: dotnet restore
+      # TODO: I have a look and compiling the Neuro-Sdk from source could work.
+
+      - name: build SDK
+        # we use debug as otherwise we get the nuget stuff we don't want.
+        run: |
+          git clone https://github.com/VedalAI/neuro-sdk.git
+          ls
+          cd neuro-sdk
+          echo "in neuro sdk"
+          ls
+          git fetch --all
+          git branch -r
+          git checkout origin/inline-nativewebsocket
+          cd Unity/NuGet
+          dotnet publish NeuroSdk.csproj -c Debug -o out
+
+      - name: list home
+        run: ls ~
+
+      - name: Create lib folder
+        run: |
+          pwd
+          mkdir NeuroTFWRIntegration/lib
+
+      - name: move SDK
+        run: |
+         cp neuro-sdk/Unity/NuGet/out/NeuroSdk.dll NeuroTFWRIntegration/lib/
+
+      - name: print lib
+        run: ls NeuroTFWRIntegration/lib
 
       - name: build
-        run: dotnet publish NeuroTFWRIntegration/NeuroTFWRIntegration.csproj -c Release -o out
-
-      # - name: test
-      #   run: dotnet test -c Release --no-build --verbosity normal
+        run: |
+          cd NeuroTFWRIntegration
+          dotnet publish NeuroTFWRIntegration.csproj -c Release -o out
 
       - name: public release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $RELEASE_TAG out/*.dll
+        run: gh release create $RELEASE_TAG NeuroTFWRIntegration/out/NeuroTFWRIntegration.dll
