@@ -24,50 +24,48 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Move home
-        run: cd ~
+      - name: first print
+        run: pwd
+
+      - name: print
+        run: ls
       # TODO: I have a look and compiling the Neuro-Sdk from source could work.
-      - name: Clone SDK
-        run: git clone https://github.com/VedalAI/neuro-sdk.git
+      # - name: Clone SDK
+      #   run: git clone https://github.com/VedalAI/neuro-sdk.git
 
-      - name: enter
-        run: cd neuro-sdk
-
-      - name: get branches
-        run: git fetch --all
-
-      - name: pull all
-        run: git pull --all
-
-      - name: switch branch
-        run: git switch inline-nativewebsocket
-
-      - name: enter SDK
-        run: cd neuro-sdk/Unity/NuGet
-
-      - name: restore SDK
-        run: dotnet restore NeuroSdk.csproj
+      # - name: print
+      #   run: ls
 
       - name: build SDK
         # we use debug as otherwise we get the nuget stuff we don't want.
-        run: dotnet publish NeuroSdk.csproj -c Debug -o out
+        run: |
+          git clone https://github.com/VedalAI/neuro-sdk.git
+          ls
+          cd neuro-sdk
+          echo "in neuro sdk"
+          ls
+          git fetch --all
+          git branch -r
+          git checkout origin/inline-nativewebsocket
+          cd Unity/NuGet
+          dotnet publish NeuroSdk.csproj -c Debug -o out
+
+      - name: list home
+        run: ls ~
 
       - name: Create lib folder
-        run: mkdir ~/NeuroTFWRIntegration/lib
+        run: |
+          pwd
+          mkdir NeuroTFWRIntegration/lib
 
       - name: move SDK
-        run: cp out/NeuroSdk.dll ~/NeuroTFWRIntegration/lib/
-
-      - name: Move home
-        run: cd ~/NeuroTFWRIntegration
-      # - name: restore
-      #   run: dotnet restore
+        run: |
+         cp neuro-sdk/Unity/NuGet/out/NeuroSdk.dll NeuroTFWRIntegration/lib/
 
       - name: build
-        run: dotnet publish NeuroTFWRIntegration/NeuroTFWRIntegration.csproj -c Release -o out
-
-      # - name: test
-      #   run: dotnet test -c Release --no-build --verbosity normal
+        run: |
+          cd NeuroTFWRIntegration
+          dotnet publish NeuroTFWRIntegration.csproj -c Release -o out
 
       - name: public release
         env:
