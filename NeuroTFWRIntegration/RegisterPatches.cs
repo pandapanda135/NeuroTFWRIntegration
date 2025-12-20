@@ -5,8 +5,6 @@ using NeuroSdk.Actions;
 using NeuroSdk.Messages.Outgoing;
 using NeuroTFWRIntegration.Actions;
 using NeuroTFWRIntegration.Utilities;
-using Unity.Profiling;
-using Unity.Properties;
 
 namespace NeuroTFWRIntegration;
 
@@ -106,4 +104,6 @@ public static class RegisterPatches
 		
 		Context.Send($"{__instance.unlockSO.unlockName} was unlocked.");
 	}
+	
+	// TODO: add sending error context and stuff line that 
 }

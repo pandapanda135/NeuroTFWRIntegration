@@ -27,8 +27,6 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      # TODO: I have a look and compiling the Neuro-Sdk from source could work.
-
       - name: build SDK
         # we use debug as otherwise we get the nuget stuff we don't want.
         run: |
