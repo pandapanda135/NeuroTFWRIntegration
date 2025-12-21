@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
@@ -105,5 +106,20 @@ public static class RegisterPatches
 		Context.Send($"{__instance.unlockSO.unlockName} was unlocked.");
 	}
 	
-	// TODO: add sending error context and stuff line that 
+	[HarmonyPatch(typeof(CodeWindow), nameof(CodeWindow.ShowError))]
+	[HarmonyPostfix]
+	public static void PostShowError(CodeWindow __instance)
+	{
+		if (!__instance.errorMessage.IsShowing()) return;
+
+		// start of text to end of error
+		var substring = __instance.CodeInput.text[..__instance.errorEndIndex];
+		var lines = substring.Split("\n").ToList();
+		int lineCount = lines.Count;
+		lines.RemoveAt(lines.IndexOf(lines.Last()));
+		int nonErrorCharacters = lines.Join().Length;
+
+		Context.Send(string.Format(Strings.ErrorMessageContext,__instance.fileNameText.text,
+			__instance.errorMessage.errorText.text,lineCount,__instance.errorStartIndex - nonErrorCharacters));
+	}
 }
