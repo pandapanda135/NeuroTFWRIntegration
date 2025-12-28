@@ -54,7 +54,7 @@ public static class QueryActions
 			
 			foreach (var drone in WorkspaceState.Farm.drones)
 			{
-				contextMessage += $"\n## Drone {drone.DroneId}\n- Position: {drone.pos}\n- Hat: {drone.hat.hatSO.hatName}\n- Current state: {drone.droneState}";	
+				contextMessage += $"\n## Drone {drone.DroneId}\n- Position: {drone.pos}\n- Current state: {drone.droneState}\n- Hat: {drone.hat.hatSO.hatName}";	
 			}
 			
 			Context.Send(contextMessage);
@@ -65,41 +65,36 @@ public static class QueryActions
 	{
 		public override string Name => "query_world";
 		protected override string Description =>
-			$"Query information about the world, if full world is set the whole world will be sent otherwise just the tile you want." +
+			$"Query information about the world, if both of the tile positions are not set the whole world will be sent, else the tile you provide." +
 			$" The current map size is {WorkspaceState.Sim.GetWorldSize()} the initial index is 0.";
 		protected override JsonSchema Schema => new()
 		{
 			Type = JsonSchemaType.Object,
-			Required = ["full_world"],
+			Required = [],
 			Properties = new Dictionary<string, JsonSchema>
 			{
-				["full_world"] = QJS.Type(JsonSchemaType.Boolean),
 				["tile_x"] = QJS.Type(JsonSchemaType.Integer),
 				["tile_y"] = QJS.Type(JsonSchemaType.Integer)
 			}
 		};
 		protected override ExecutionResult Validate(ActionJData actionData, out Vector2Int? parsedData)
 		{
-			// we include full world as integers default to 0 if not set and I can't just assume if she wants 0,0 she is not setting anything.
-			bool? fullWorld = actionData.Data?.Value<bool>("full_world");
-			int? tileX = actionData.Data?.Value<int>("tile_x");
-			int? tileY = actionData.Data?.Value<int>("tile_y");
+			int? tileX = actionData.Data?.Value<int?>("tile_x");
+			int? tileY = actionData.Data?.Value<int?>("tile_y");
 			
 			parsedData = null;
-			if (fullWorld is null) return ExecutionResult.Failure($"You must provide if you want the full world.");
-			
-			if (fullWorld.Value)
+			if (tileX is null && tileY is null)
 			{
 				return ExecutionResult.Success($""); 
 			}
-			
-			if ((tileX is null && tileY is not null) || (tileX is not null && tileY is null))
+
+			// if only one is null
+			if (tileX is null || tileY is null)
 			{
-				return ExecutionResult.Failure($"You must either provide a full valid tile or no tile.");
+				return ExecutionResult.Failure($"You must either provide a valid tile or no tile.");
 			}
 			
-			parsedData = new(tileX!.Value, tileY!.Value);
-			
+			parsedData = new(tileX.Value, tileY.Value);
 			if (!WorkspaceState.Farm.grid.IsWithinBounds((Vector2Int)parsedData))
 				return ExecutionResult.Failure($"The tile you provided is not withing bounds.");
 			
@@ -120,7 +115,6 @@ public static class QueryActions
 			{
 				for (int y = 0; y < WorkspaceState.Sim.GetWorldSize().y; y++)
 				{
-					Logger.Info($"adding {x},{y}");
 					contextMessage += $"{GetTileString(new Vector2Int(x, y))}";
 				}
 			}
