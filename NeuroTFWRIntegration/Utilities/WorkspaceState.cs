@@ -12,4 +12,6 @@ public static class WorkspaceState
 	public static GameObject Object => Sim.gameObject;
 
 	public static MainSim Sim => MainSim.Inst;
+
+	public static Farm Farm => Sim.sim.farm;
 }

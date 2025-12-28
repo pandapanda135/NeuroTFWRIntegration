@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NeuroSdk.Actions;
@@ -8,6 +9,10 @@ namespace NeuroTFWRIntegration.Actions;
 public static class RegisterMainActions
 {
 	private static bool _mainRegistered;
+
+	private static List<Type> _noBoxesActions = new();
+
+	private static List<Type> _allActions = new();
 	
 	public static void RegisterMain()
 	{
@@ -15,17 +20,18 @@ public static class RegisterMainActions
 		_mainRegistered = true;
 		if (!WorkspaceState.CodeWindows.Any())
 		{
-			NeuroActionHandler.RegisterActions(new CodeWindowActions.CreateWindow());
+			NeuroActionHandler.RegisterActions(GetActions(_noBoxesActions));
 			return;
 		}
-
-		List<INeuroAction> actions = new();
-		// for some reason this requires closing and opening a menu after pressing play to work,
-		// IDK why IDK how to fix it, and I've spent way too much time trying to get it to work already
-		if (WorkspaceState.Sim.researchMenu.allBoxes.Count > 0)
-			actions.Add(new DocsActions.GetDocumentation());
 		
-		actions.AddRange([new PatchActions.GetWindowCode(), new PatchActions.WritePatch(), new CodeWindowActions.CreateWindow()]);
+		// for some reason documentation requires closing and opening a menu after pressing play to populate schema,
+		// IDK why IDK how to fix it, and I've spent way too much time trying to get it to work already
+		var actions =
+			GetActions(_allActions, 
+				action => action is DocsActions.GetDocumentation && 
+				          !WorkspaceState.Sim.researchMenu.allBoxes.Any(box =>
+					          box.Value.unlockState is UnlockBox.UnlockState.Unlocked));
+
 		NeuroActionHandler.RegisterActions(actions);
 	}
 	
@@ -37,15 +43,41 @@ public static class RegisterMainActions
 		// if there is only one or no code windows and all the mains are not registered.
 		if (WorkspaceState.CodeWindows.Count < 2 && NeuroActionHandler.GetRegistered($"{new PatchActions.WritePatch().Name}") is null)
 		{
-			NeuroActionHandler.UnregisterActions(new CodeWindowActions.CreateWindow());
+			NeuroActionHandler.UnregisterActions(GetActions(_noBoxesActions));
 			return;
 		}
-		List<INeuroAction> actions = new();
 		
-		if (WorkspaceState.Sim.researchMenu.allBoxes.Any())
-			actions.Add(new DocsActions.GetDocumentation());
+		// I believe this also includes actions registered via action windows
+		var actions = GetActions(_allActions, action => NeuroActionHandler.GetRegistered(action.Name) is null);
 		
-		actions.AddRange([new PatchActions.GetWindowCode(), new PatchActions.WritePatch(), new CodeWindowActions.CreateWindow()]);
 		NeuroActionHandler.UnregisterActions(actions);
+	}
+
+	public static List<INeuroAction> GetActions(List<Type> actionTypes, Func<INeuroAction, bool>? customChecks = null)
+	{
+		List<INeuroAction> actions = new();
+		foreach (var type in actionTypes)
+		{
+			if (Activator.CreateInstance(type) is not INeuroAction action) continue;
+
+			Logger.Info($"test actions: {action.Name}  {customChecks != null && customChecks(action)}   any boxes: {WorkspaceState.Sim.researchMenu.allBoxes.Any(box => box.Value.unlockState is UnlockBox.UnlockState.Unlocked)}");
+			if (customChecks is not null && customChecks(action)) continue;
+			
+			actions.Add(action);
+		}
+
+		return actions;
+	}
+
+	public static void PopulateActionLists()
+	{
+		_allActions.AddRange([
+			typeof(PatchActions.GetWindowCode), typeof(PatchActions.WritePatch), typeof(CodeWindowActions.CreateWindow),
+			typeof(QueryActions.QueryResources), typeof(DocsActions.GetDocumentation), typeof(QueryActions.QueryDrone),
+			typeof(QueryActions.QueryWorld)
+		]);
+		
+		_noBoxesActions.AddRange([typeof(CodeWindowActions.CreateWindow), typeof(QueryActions.QueryResources),
+			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld)]);
 	}
 }

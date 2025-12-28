@@ -39,6 +39,8 @@ public class Plugin : BaseUnityPlugin
 		NeuroSdk.NeuroSdkSetup.Initialize("The Farmer Was Replaced");
 
 		Harmony.CreateAndPatchAll(typeof(RegisterPatches));
+		
+		RegisterMainActions.PopulateActionLists();
 	}
 
 	private void Update()

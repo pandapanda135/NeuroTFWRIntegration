@@ -91,8 +91,8 @@ public static class RegisterPatches
 		if (Plugin.ResearchMenuActions is not null && Plugin.ResearchMenuActions.Value) return;
 
 		// this will happen if the item is maxed 
-		if (WorkspaceState.Sim.sim.farm.GetUnlockCost(__instance.unlockSO) == null ||
-		    WorkspaceState.Sim.sim.farm.GetUnlockCost(__instance.unlockSO) == ItemBlock.CreateEmpty()) return;
+		if (WorkspaceState.Farm.GetUnlockCost(__instance.unlockSO) == null ||
+		    WorkspaceState.Farm.GetUnlockCost(__instance.unlockSO) == ItemBlock.CreateEmpty()) return;
 		
 		// this is for upgrades, we also use this to check if a button that cannot be bought is still clicked.
 		if (__instance.NumUnlocked() == __instance.prevNumUnlocked) return;
