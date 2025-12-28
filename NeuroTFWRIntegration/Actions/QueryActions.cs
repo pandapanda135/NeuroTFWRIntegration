@@ -11,21 +11,21 @@ namespace NeuroTFWRIntegration.Actions;
 
 public static class QueryActions
 {
-	public class QueryResources : NeuroAction
+	public class QueryItems : NeuroAction
 	{
-		public override string Name => "query_resources";
-		protected override string Description => "Get the amount of each resources you have.";
+		public override string Name => "query_items";
+		protected override string Description => "Get the amount of each item you have.";
 		protected override JsonSchema Schema => new();
 		protected override ExecutionResult Validate(ActionJData actionData)
 		{
-			if (!WorkspaceState.Sim.GetInventory().ItemIds().Any()) return ExecutionResult.Failure($"You do not have any resources, you should stop being poor.");
+			if (!WorkspaceState.Sim.GetInventory().ItemIds().Any()) return ExecutionResult.Failure($"You do not have any items, you should stop being poor.");
 			
 			return ExecutionResult.Success($"");
 		}
 
 		protected override void Execute()
 		{
-			string contextMessage = "# Resources";
+			string contextMessage = "# Items";
 			foreach (var id in WorkspaceState.Sim.GetInventory().ItemIds())
 			{
 				// this is what the game does for tool tips
