@@ -39,12 +39,15 @@ public class Plugin : BaseUnityPlugin
 		NeuroSdk.NeuroSdkSetup.Initialize("The Farmer Was Replaced");
 
 		Harmony.CreateAndPatchAll(typeof(RegisterPatches));
+		Harmony.CreateAndPatchAll(typeof(ContextPatches));
 		
 		RegisterMainActions.PopulateActionLists();
 	}
 
 	private void Update()
 	{
+		if (Debug is null || !Debug.Value) return;
+		
 		if (UnityInput.Current.GetKey(KeyCode.F))
 		{
 			RegisterMainActions.UnregisterMain();
