@@ -73,11 +73,11 @@ public static class RegisterMainActions
 	{
 		_allActions.AddRange([
 			typeof(PatchActions.GetWindowCode), typeof(PatchActions.WritePatch), typeof(CodeWindowActions.CreateWindow),
-			typeof(QueryActions.QueryResources), typeof(DocsActions.GetDocumentation), typeof(QueryActions.QueryDrone),
-			typeof(QueryActions.QueryWorld)
+			typeof(QueryActions.QueryItems), typeof(DocsActions.GetDocumentation), typeof(QueryActions.QueryDrone),
+			typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)
 		]);
 		
-		_noBoxesActions.AddRange([typeof(CodeWindowActions.CreateWindow), typeof(QueryActions.QueryResources),
-			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld)]);
+		_noBoxesActions.AddRange([typeof(CodeWindowActions.CreateWindow), typeof(QueryActions.QueryItems),
+			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)]);
 	}
 }

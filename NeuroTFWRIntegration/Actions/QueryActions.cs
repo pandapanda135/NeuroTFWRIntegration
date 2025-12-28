@@ -11,21 +11,21 @@ namespace NeuroTFWRIntegration.Actions;
 
 public static class QueryActions
 {
-	public class QueryResources : NeuroAction
+	public class QueryItems : NeuroAction
 	{
-		public override string Name => "query_resources";
-		protected override string Description => "Get the amount of each resources you have.";
+		public override string Name => "query_items";
+		protected override string Description => "Get the amount of each item you have.";
 		protected override JsonSchema Schema => new();
 		protected override ExecutionResult Validate(ActionJData actionData)
 		{
-			if (!WorkspaceState.Sim.GetInventory().ItemIds().Any()) return ExecutionResult.Failure($"You do not have any resources, you should stop being poor.");
+			if (!WorkspaceState.Sim.GetInventory().ItemIds().Any()) return ExecutionResult.Failure($"You do not have any items, you should stop being poor.");
 			
 			return ExecutionResult.Success($"");
 		}
 
 		protected override void Execute()
 		{
-			string contextMessage = "# Resources";
+			string contextMessage = "# Items";
 			foreach (var id in WorkspaceState.Sim.GetInventory().ItemIds())
 			{
 				// this is what the game does for tool tips
@@ -126,6 +126,77 @@ public static class QueryActions
 		{
 			GridManager grid = WorkspaceState.Farm.grid;
 			return $"\n## {tile}\n- Ground: {grid.grounds[tile].objectSO.objectName}\n- Entity: {grid.entities[tile].objectSO.name}";
+		}
+	}
+
+	public class QueryBuiltin : NeuroAction<string?>
+	{
+		private readonly string[] _validOptions = ["entities", "items", "hats", "functions", "grounds"];
+		public override string Name => "query_builtin";
+		protected override string Description => "Query the built in features of this language, these can be variables, enums and functions." +
+		                                         " If you want all to query all of the built-ins you should not provide an option.";
+		protected override JsonSchema Schema => new()
+		{
+			Type = JsonSchemaType.Object,
+			Required = [],
+			Properties = new Dictionary<string, JsonSchema>
+			{
+				["option"] = QJS.Enum(_validOptions)
+			}
+		};
+		protected override ExecutionResult Validate(ActionJData actionData, out string? resultData)
+		{
+			string? option = actionData.Data?.Value<string?>("option");
+
+			resultData = null;
+			if (string.IsNullOrEmpty(option))
+			{
+				return ExecutionResult.Success();
+			}
+
+			if (!_validOptions.Contains(option)) return ExecutionResult.Failure($"You did not provide a valid option.");
+
+			resultData = option;
+			return ExecutionResult.Success();
+		}
+
+		protected override void Execute(string? resultData)
+		{
+			if (string.IsNullOrEmpty(resultData))
+			{
+				ResourceContext.SendBuiltinContext();
+				return;
+			}
+
+			switch (resultData)
+			{
+				case "entities":
+					Context.Send($"# Entities{ListToSingular(ResourceContext.GetEntityStrings())}");
+					break;
+				case "items":
+					Context.Send($"# Items{ListToSingular(ResourceContext.GetItemStrings())}");
+					break;
+				case "hats":
+					Context.Send($"# Hats{ListToSingular(ResourceContext.GetHatStrings())}");
+					break;
+				case "functions":
+					Context.Send($"# Functions{ListToSingular(ResourceContext.GetFunctionStrings())}");
+					break;
+				case "grounds":
+					Context.Send($"# Grounds{ListToSingular(ResourceContext.GetGroundStrings())}");
+					break;
+				default:
+
+					Context.Send($"Your request for {resultData} was not valid, if you want all of the possible builtins you should not specify anything.");
+					ResourceContext.SendBuiltinContext();
+					Logger.Error($"Allowed invalid result data into execute: {resultData}");
+					break;
+			}
+		}
+
+		private static string ListToSingular(List<string> list)
+		{
+			return string.Join("", list.Select(s => $"\n- {s}"));
 		}
 	}
 }
