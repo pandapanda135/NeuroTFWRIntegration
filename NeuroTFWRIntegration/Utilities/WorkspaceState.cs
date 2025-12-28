@@ -14,4 +14,9 @@ public static class WorkspaceState
 	public static MainSim Sim => MainSim.Inst;
 
 	public static Farm Farm => Sim.sim.farm;
+
+
+	public static bool MenuOpen => MainMenuActive || ResearchMenuOpen;
+	public static bool MainMenuActive => Sim.menu.menu.activeSelf;
+	public static bool ResearchMenuOpen => Sim.researchMenu.IsOpen;
 }

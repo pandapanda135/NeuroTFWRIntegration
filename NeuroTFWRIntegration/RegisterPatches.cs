@@ -64,8 +64,8 @@ public static class RegisterPatches
 				{
 					text += $"\n### Docs Path\n {kvp.Value.unlockSO.docs}";
 				}
-				
-				return ResourceContext.GetUnlockContext(kvp.Value.unlockSO, kvp.Value.unlockState);
+
+				return text;
 			})
 		);
 		if (Plugin.ResearchMenuActions is not null && !Plugin.ResearchMenuActions.Value)

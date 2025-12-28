@@ -74,10 +74,10 @@ public static class RegisterMainActions
 		_allActions.AddRange([
 			typeof(PatchActions.GetWindowCode), typeof(PatchActions.WritePatch), typeof(CodeWindowActions.CreateWindow),
 			typeof(QueryActions.QueryItems), typeof(DocsActions.GetDocumentation), typeof(QueryActions.QueryDrone),
-			typeof(QueryActions.QueryWorld)
+			typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)
 		]);
 		
 		_noBoxesActions.AddRange([typeof(CodeWindowActions.CreateWindow), typeof(QueryActions.QueryItems),
-			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld)]);
+			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)]);
 	}
 }
