@@ -6,6 +6,7 @@ using NeuroSdk.Actions;
 using NeuroSdk.Json;
 using NeuroSdk.Messages.Outgoing;
 using NeuroSdk.Websocket;
+using NeuroTFWRIntegration.ContextHandlers;
 using NeuroTFWRIntegration.Utilities;
 using NeuroTFWRIntegration.Utilities.Patching;
 
@@ -49,7 +50,7 @@ public static class PatchActions
 			}
 			catch (Exception e)
 			{
-				Logger.Error($"Write patch validation error: {e}");
+				Utilities.Logger.Error($"Write patch validation error: {e}");
 				return ExecutionResult.Failure(
 					$"You made a mistake when writing this patch, this is the error message: {e.Message}");
 			}
@@ -61,7 +62,7 @@ public static class PatchActions
 		protected override void Execute(string? parsedData)
 		{
 			if (parsedData is null) return;
-			Logger.Info($"running write execute");
+			Utilities.Logger.Info($"running write execute");
 			var parser = PatchHelpers.GetParser(parsedData);
 
 			try
@@ -70,7 +71,7 @@ public static class PatchActions
 			}
 			catch (Exception e)
 			{
-				Logger.Error($"What the fuck happened here: {e}");
+				Utilities.Logger.Error($"What the fuck happened here: {e}");
 				Context.Send($"There was an error when trying to apply the patch you just sent, you should either," +
 				             $" tell the person you are playing with and see if they can help you or try something else.");
 				throw;

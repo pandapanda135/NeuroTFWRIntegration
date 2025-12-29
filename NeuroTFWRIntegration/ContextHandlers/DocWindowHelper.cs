@@ -5,7 +5,7 @@ using NeuroTFWRIntegration.Utilities;
 using TMPro;
 using Object = UnityEngine.Object;
 
-namespace NeuroTFWRIntegration;
+namespace NeuroTFWRIntegration.ContextHandlers;
 
 public class DocWindowHelper
 {

@@ -4,6 +4,7 @@ using NeuroSdk.Actions;
 using NeuroSdk.Json;
 using NeuroSdk.Messages.Outgoing;
 using NeuroSdk.Websocket;
+using NeuroTFWRIntegration.ContextHandlers;
 using NeuroTFWRIntegration.Utilities;
 using UnityEngine;
 
@@ -189,7 +190,7 @@ public static class QueryActions
 
 					Context.Send($"Your request for {resultData} was not valid, if you want all of the possible builtins you should not specify anything.");
 					ResourceContext.SendBuiltinContext();
-					Logger.Error($"Allowed invalid result data into execute: {resultData}");
+					Utilities.Logger.Error($"Allowed invalid result data into execute: {resultData}");
 					break;
 			}
 		}

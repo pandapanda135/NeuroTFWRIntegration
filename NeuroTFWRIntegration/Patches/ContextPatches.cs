@@ -1,9 +1,10 @@
 using System.Linq;
 using HarmonyLib;
 using NeuroSdk.Messages.Outgoing;
+using NeuroTFWRIntegration.ContextHandlers;
 using NeuroTFWRIntegration.Utilities;
 
-namespace NeuroTFWRIntegration;
+namespace NeuroTFWRIntegration.Patches;
 
 public class ContextPatches
 {

@@ -4,10 +4,11 @@ using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using NeuroTFWRIntegration.Actions;
+using NeuroTFWRIntegration.Patches;
 using NeuroTFWRIntegration.Utilities;
 using TMPro;
 using UnityEngine;
-using static NeuroTFWRIntegration.Logger;
+using static NeuroTFWRIntegration.Utilities.Logger;
 
 namespace NeuroTFWRIntegration;
 

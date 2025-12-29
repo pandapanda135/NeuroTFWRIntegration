@@ -3,7 +3,7 @@ using System.Linq;
 using NeuroSdk.Messages.Outgoing;
 using NeuroTFWRIntegration.Utilities;
 
-namespace NeuroTFWRIntegration;
+namespace NeuroTFWRIntegration.ContextHandlers;
 
 public class ResourceContext
 {

@@ -1,4 +1,4 @@
-namespace NeuroTFWRIntegration;
+namespace NeuroTFWRIntegration.ContextHandlers;
 
 public static class PatchStrings
 {

@@ -6,7 +6,7 @@ using NeuroSdk.Messages.Outgoing;
 using NeuroTFWRIntegration.Actions;
 using NeuroTFWRIntegration.Utilities;
 
-namespace NeuroTFWRIntegration;
+namespace NeuroTFWRIntegration.Patches;
 
 public static class RegisterPatches
 {
@@ -38,16 +38,7 @@ public static class RegisterPatches
 	[HarmonyPrefix]
 	public static void SetupResearchMenu()
 	{
-		Logger.Info($"setup research");
-		if (WorkspaceState.Sim.researchMenu.IsOpen)
-		{
-			RegisterMainActions.RegisterMain();
-			return;
-		}
-		
-		RegisterMainActions.UnregisterMain();
-		
-		Logger.Info($"docs: {string.Join("\n",WorkspaceState.Sim.researchMenu.allBoxes.Select(box => box.Value.unlockSO.docs))}");
+		Utilities.Logger.Info($"docs: {string.Join("\n",WorkspaceState.Sim.researchMenu.allBoxes.Select(box => box.Value.unlockSO.docs))}");
 		
 		// unlockable or upgradeable
 		string getBoxesText = string.Join("\n", WorkspaceState.Sim.researchMenu.allBoxes

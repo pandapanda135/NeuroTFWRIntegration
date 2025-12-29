@@ -58,7 +58,7 @@ public static class ResearchActions
 				}
 			}
 
-			Logger.Info($"success execution");
+			Utilities.Logger.Info($"success execution");
 			parsedData = name;
 			return ExecutionResult.Success($"Unlocking {name}");
 		}
