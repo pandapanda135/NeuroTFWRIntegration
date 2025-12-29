@@ -35,7 +35,7 @@ public class TestParser
 		{
 			Console.WriteLine($"actions: {patchAction.Type}    new file contents:\n{patchAction.NewFile}");
 		}
-		Assert.Pass($"There were no issues when parsing TestingStringOne");
+		Assert.Pass($"There were no issues when parsing the standard patch string.");
 	}
 
 	[Test(Description = "This is meant to fail, the console should display an index out of range exception.")]
@@ -54,7 +54,7 @@ public class TestParser
 			Assert.Pass($"This should be Index was out of range: {e}");
 		}
 		
-		Assert.Fail($"This should not be a valid test.");
+		Assert.Fail($"This test should not have succeeded.");
 	}
 	
 	[Test]
@@ -100,6 +100,28 @@ public class TestParser
 			Console.WriteLine($"actions: {patchAction.Type}    new file contents:\n{patchAction.NewFile}");
 		}
 		Assert.Pass($"There were no issues when parsing with an empty replace string.");
+	}
+
+	[Test]
+	public void MultipleActionsSingleFileTest()
+	{
+		var searchParser = GetSearchParser(TestingStrings.MultipleActionPatch, ["main", "second"], TestingStrings.StandardFileContents);
+		
+		try
+		{
+			searchParser.Parse();
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e);
+			Assert.Fail($"There was an exception caught when running parsing: {e}");
+		}
+
+		foreach (var patchAction in searchParser.Patch.Actions)
+		{
+			Console.WriteLine($"actions: {patchAction.Type}    new file contents:\n{patchAction.NewFile}");
+		}
+		Assert.Pass($"There were no issues when parsing with multiple actions on one file.");
 	}
 	
 	#endregion
