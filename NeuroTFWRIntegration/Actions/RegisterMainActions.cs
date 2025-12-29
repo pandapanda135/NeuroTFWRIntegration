@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NeuroSdk.Actions;
 using NeuroTFWRIntegration.Utilities;
+using UnityEngine;
 
 namespace NeuroTFWRIntegration.Actions;
 
@@ -26,11 +28,9 @@ public static class RegisterMainActions
 		
 		// for some reason documentation requires closing and opening a menu after pressing play to populate schema,
 		// IDK why IDK how to fix it, and I've spent way too much time trying to get it to work already
-		var actions =
-			GetActions(_allActions, 
-				action => action is DocsActions.GetDocumentation && 
-				          !WorkspaceState.Sim.researchMenu.allBoxes.Any(box =>
-					          box.Value.unlockState is UnlockBox.UnlockState.Unlocked));
+		var actions = GetActions(_allActions, action => action is DocsActions.GetDocumentation 
+		                                                && !WorkspaceState.Sim.researchMenu.allBoxes.Any(box
+			                                                => box.Value.unlockState is UnlockBox.UnlockState.Unlocked));
 
 		NeuroActionHandler.RegisterActions(actions);
 	}
@@ -73,7 +73,7 @@ public static class RegisterMainActions
 	{
 		_allActions.AddRange([
 			typeof(PatchActions.GetWindowCode), typeof(PatchActions.WritePatch), typeof(CodeWindowActions.CreateWindow),
-			typeof(QueryActions.QueryItems), typeof(DocsActions.GetDocumentation), typeof(QueryActions.QueryDrone),
+			typeof(QueryActions.QueryItems), typeof(DocsActions.GetDocumentation), typeof(DocsActions.GetNewDocumentation), typeof(QueryActions.QueryDrone),
 			typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)
 		]);
 		

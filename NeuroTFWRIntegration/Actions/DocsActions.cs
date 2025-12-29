@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace NeuroTFWRIntegration.Actions;
 
-public class DocsActions
+public static class DocsActions
 {
 	public class GetDocumentation : NeuroAction<string>
 	{
@@ -59,6 +59,42 @@ public class DocsActions
 				if (docsComponent is not DocsWindow docs) return;
 				Context.Send($"These are the full contents of {docs.openDoc}\n{docs.fullOpenDoc}");
 			}
+		}
+	}
+
+	public class GetNewDocumentation : NeuroAction<string>
+	{
+		public override string Name => "get_new_documentation";
+		protected override string Description => "sadf";
+
+		protected override JsonSchema Schema => new()
+		{
+			Type = JsonSchemaType.Object,
+			Required = ["file"],
+			Properties = new Dictionary<string, JsonSchema>
+			{
+				["file"] = QJS.Enum(GetPaths())
+			}
+		};
+		protected override ExecutionResult Validate(ActionJData actionData, out string? parsedData)
+		{
+			throw new System.NotImplementedException();
+		}
+	
+		protected override void Execute(string? parsedData)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		private static List<string> GetPaths()
+		{
+			var windowHelper = new DocWindowHelper();
+			windowHelper.CreateDocWindow();
+			var links = windowHelper.GetLinks();
+			links.RemoveAll(string.IsNullOrEmpty);
+			windowHelper.Destroy();
+			
+			return links;
 		}
 	}
 }
