@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using NeuroTFWRIntegration.Actions;
+using NeuroTFWRIntegration.Utilities;
+using TMPro;
 using UnityEngine;
 using static NeuroTFWRIntegration.Logger;
 
@@ -44,14 +47,52 @@ public class Plugin : BaseUnityPlugin
 		RegisterMainActions.PopulateActionLists();
 	}
 
+	private int _waitNext;
 	private void Update()
 	{
+		if (_waitNext > 100)
+		{
+			_waitNext = 0;
+		}
+
+		if (_waitNext != 0)
+		{
+			_waitNext++;
+			return;
+		}
 		if (Debug is null || !Debug.Value) return;
 		
 		if (UnityInput.Current.GetKey(KeyCode.F))
 		{
 			RegisterMainActions.UnregisterMain();
 			RegisterMainActions.RegisterMain();
+		}
+
+		if (UnityInput.Current.GetKey(KeyCode.Z))
+		{
+			_waitNext = 1;
+
+			
+			var window = Instantiate(WorkspaceState.CurrentWorkspace.docWinPrefab, WorkspaceState.Sim.inv.container);
+			Logger.LogInfo($"container: {window.container}");
+			Logger.LogInfo($"markdown prefab: {window.markdownPrefab}");
+
+			string homePath = "docs/home.md";
+			window.LoadDoc(homePath);
+
+			List<string> paths = new(); 
+			foreach (CodeInputField textField in window.OpenMarkdownText.textFields)
+			{
+				Logger.LogInfo($"text field: {textField}");
+					
+				foreach (var link in textField.textComponent.textInfo.linkInfo)
+				{
+					paths.Add(link.GetLink());
+					Logger.LogInfo($"link: {link.GetLink()}");
+				}
+			}
+			
+			Destroy(window.gameObject);
 		}
 	}
 }
