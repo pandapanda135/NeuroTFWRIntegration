@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NeuroTFWRIntegration.Utilities;
 using TMPro;
 using Object = UnityEngine.Object;
@@ -21,6 +22,11 @@ public class DocWindowHelper
 
 		_window = window;
 	}
+
+	public void ChangeDoc(string path)
+	{
+		_window?.LoadDoc(path);
+	}
 	
 	public List<string> GetLinks()
 	{
@@ -29,13 +35,28 @@ public class DocWindowHelper
 		List<string> lines = new(); 
 		foreach (CodeInputField textField in _window.OpenMarkdownText.textFields)
 		{
-			foreach (var link in textField.textComponent.textInfo.linkInfo)
-			{
-				lines.Add(link.GetLink());
-			}
+			lines.AddRange(textField.textComponent.textInfo.linkInfo.Select(link => link.GetLink()));
 		}
 		
 		return lines;
+	}
+
+	public string GetText()
+	{
+		if (_window is null) throw new NullReferenceException();
+		string text = _window.OpenMarkdownText.textFields.Aggregate("", (current, field) => current + field.textComponent.GetParsedText());
+
+		return text;
+	}
+
+	public static string GetText(string link)
+	{
+		var window = new DocWindowHelper();
+		window.CreateDocWindow(link);
+
+		string text = window.GetText();
+		window.Destroy();
+		return text;
 	}
 
 	public void Destroy()
