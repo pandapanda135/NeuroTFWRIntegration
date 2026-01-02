@@ -45,7 +45,7 @@ jobs:
       - name: move SDK
         run: |
          cp neuro-sdk/Unity/NuGet/out/NeuroSdk.dll NeuroTFWRIntegration/lib/
-         cp neuro-sdk/Unity/NuGet/out/Newtonsoft.Json.dll NeuroTFWRIntegration/lib/
+        #  cp neuro-sdk/Unity/NuGet/out/Newtonsoft.Json.dll NeuroTFWRIntegration/lib/
 
       - name: build
         run: |
