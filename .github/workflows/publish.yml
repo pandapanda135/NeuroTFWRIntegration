@@ -31,13 +31,8 @@ jobs:
         # we use debug as otherwise we get the nuget stuff we don't want.
         run: |
           git clone https://github.com/VedalAI/neuro-sdk.git
-          ls
           cd neuro-sdk
-          echo "in neuro sdk"
-          ls
           git fetch --all
-          git branch -r
-          git checkout origin/inline-nativewebsocket
           cd Unity/NuGet
           dotnet publish NeuroSdk.csproj -c Debug -o out
 
