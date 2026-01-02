@@ -27,22 +27,15 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      # we need to do this as the SDK and the game share a class name and when compiling it likes to pick the game's class rather than the SDK's for some reason.
       - name: build SDK
         # we use debug as otherwise we get the nuget stuff we don't want.
         run: |
           git clone https://github.com/VedalAI/neuro-sdk.git
-          ls
           cd neuro-sdk
-          echo "in neuro sdk"
-          ls
           git fetch --all
-          git branch -r
-          git checkout origin/inline-nativewebsocket
           cd Unity/NuGet
           dotnet publish NeuroSdk.csproj -c Debug -o out
-
-      - name: list home
-        run: ls ~
 
       - name: Create lib folder
         run: |
@@ -53,9 +46,6 @@ jobs:
         run: |
          cp neuro-sdk/Unity/NuGet/out/NeuroSdk.dll NeuroTFWRIntegration/lib/
 
-      - name: print lib
-        run: ls NeuroTFWRIntegration/lib
-
       - name: build
         run: |
           cd NeuroTFWRIntegration
@@ -64,4 +54,13 @@ jobs:
       - name: public release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $RELEASE_TAG NeuroTFWRIntegration/out/NeuroTFWRIntegration.dll
+        run: |
+          cd NeuroTFWRIntegration
+          mkdir NeuroTFWRIntegration
+          cp out/NeuroTFWRIntegration.dll NeuroTFWRIntegration/
+          cp out/Newtonsoft.Json.dll NeuroTFWRIntegration/
+          cp out/NeuroSdk.dll NeuroTFWRIntegration/
+          cp out/EditParsing.dll NeuroTFWRIntegration/
+          zip -r NeuroTFWRIntegration.zip NeuroTFWRIntegration
+
+          gh release create "$RELEASE_TAG" NeuroTFWRIntegration.zip
