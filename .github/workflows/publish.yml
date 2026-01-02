@@ -56,12 +56,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd NeuroTFWRIntegration
-          mkdir output
-
-          cp out/NeuroTFWRIntegration.dll output/
-          cp out/Newtonsoft.Json.dll output/
-          cp out/NeuroSdk.dll output/
-          cp out/EditParsing.dll output/
-          zip -r NeuroTFWRIntegration output/
+          mkdir NeuroTFWRIntegration
+          cp out/NeuroTFWRIntegration.dll NeuroTFWRIntegration/
+          cp out/Newtonsoft.Json.dll NeuroTFWRIntegration/
+          cp out/NeuroSdk.dll NeuroTFWRIntegration/
+          cp out/EditParsing.dll NeuroTFWRIntegration/
+          zip -r NeuroTFWRIntegration.zip NeuroTFWRIntegration
 
           gh release create "$RELEASE_TAG" NeuroTFWRIntegration.zip
