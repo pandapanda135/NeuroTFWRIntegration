@@ -52,7 +52,14 @@ jobs:
           cd NeuroTFWRIntegration
           dotnet build NeuroTFWRIntegration.csproj -c Release -o out
 
+      - name: ls out
+        run: |
+          ls NeuroTFWRIntegration/out
+
       - name: public release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $RELEASE_TAG NeuroTFWRIntegration/out/*.dll
+        run: |
+          cd NeuroTFWRIntegration/out
+          gh release create "$RELEASE_TAG" *.dll --clobber
+        # run: gh release create $RELEASE_TAG NeuroTFWRIntegration/out/*.dll
