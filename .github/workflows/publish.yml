@@ -57,10 +57,11 @@ jobs:
         run: |
           cd NeuroTFWRIntegration
           mkdir output
+
           cp out/NeuroTFWRIntegration.dll output/
           cp out/Newtonsoft.Json.dll output/
           cp out/NeuroSdk.dll output/
           cp out/EditParsing.dll output/
-          ls output/
+          zip NeuroTFWRIntegration output/
 
-          gh release create "$RELEASE_TAG" output/*.dll
+          gh release create "$RELEASE_TAG" NeuroTFWRIntegration.zip
