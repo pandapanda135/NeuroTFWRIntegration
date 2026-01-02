@@ -27,6 +27,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      # we need to do this as the SDK and the game share a class name and when compiling it likes to pick the game's class rather than the SDK's for some reason.
       - name: build SDK
         # we use debug as otherwise we get the nuget stuff we don't want.
         run: |
@@ -36,9 +37,6 @@ jobs:
           cd Unity/NuGet
           dotnet publish NeuroSdk.csproj -c Debug -o out
 
-      - name: list home
-        run: ls ~
-
       - name: Create lib folder
         run: |
           pwd
@@ -47,9 +45,7 @@ jobs:
       - name: move SDK
         run: |
          cp neuro-sdk/Unity/NuGet/out/NeuroSdk.dll NeuroTFWRIntegration/lib/
-
-      - name: print lib
-        run: ls NeuroTFWRIntegration/lib
+         cp neuro-sdk/Unity/NuGet/out/Newtonsoft.Json.dll NeuroTFWRIntegration/lib/
 
       - name: build
         run: |
