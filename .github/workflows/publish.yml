@@ -45,21 +45,22 @@ jobs:
       - name: move SDK
         run: |
          cp neuro-sdk/Unity/NuGet/out/NeuroSdk.dll NeuroTFWRIntegration/lib/
-        #  cp neuro-sdk/Unity/NuGet/out/Newtonsoft.Json.dll NeuroTFWRIntegration/lib/
 
       - name: build
         run: |
           cd NeuroTFWRIntegration
-          dotnet build NeuroTFWRIntegration.csproj -c Release -o out
-
-      - name: ls out
-        run: |
-          ls NeuroTFWRIntegration/out
+          dotnet publish NeuroTFWRIntegration.csproj -c Release -o out
 
       - name: public release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cd NeuroTFWRIntegration/out
-          gh release create "$RELEASE_TAG" *.dll
-        # run: gh release create $RELEASE_TAG NeuroTFWRIntegration/out/*.dll
+          cd NeuroTFWRIntegration
+          mkdir output
+          cp out/NeuroTFWRIntegration.dll output/
+          cp out/Newtonsoft.Json.dll output/
+          cp out/NeuroSdk.dll output/
+          cp out/EditParsing.dll output/
+          ls output/
+
+          gh release create "$RELEASE_TAG" output/*.dll
