@@ -62,6 +62,6 @@ jobs:
           cp out/Newtonsoft.Json.dll output/
           cp out/NeuroSdk.dll output/
           cp out/EditParsing.dll output/
-          zip NeuroTFWRIntegration output/
+          zip -r NeuroTFWRIntegration output/
 
           gh release create "$RELEASE_TAG" NeuroTFWRIntegration.zip
