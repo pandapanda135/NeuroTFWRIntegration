@@ -61,5 +61,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd NeuroTFWRIntegration/out
-          gh release create "$RELEASE_TAG" *.dll --clobber
+          gh release create "$RELEASE_TAG" *.dll
         # run: gh release create $RELEASE_TAG NeuroTFWRIntegration/out/*.dll
