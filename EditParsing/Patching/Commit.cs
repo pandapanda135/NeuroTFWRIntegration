@@ -12,7 +12,7 @@ public class FileChanges
 		MovePath = movePath;
 	}
 
-	public ChangeType Type;
+	public readonly ChangeType Type;
 
 	public string? OldContent;
 	public string? NewContext;
@@ -21,5 +21,5 @@ public class FileChanges
 
 public class Commit
 {
-	public Dictionary<string, FileChanges> Changes = new();
+	public Dictionary<string, List<FileChanges>> Changes = new();
 }

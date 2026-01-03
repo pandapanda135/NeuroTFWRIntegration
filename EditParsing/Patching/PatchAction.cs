@@ -7,20 +7,23 @@ namespace EditParsing.Patching;
 /// </summary>
 public class PatchAction
 {
-	public PatchAction(ChangeType type)
+	public PatchAction(string path, ChangeType type)
 	{
+		Path = path;
 		Type = type;
 	}
 
-	public PatchAction(ChangeType type,string replaceString, string searchingString)
+	public PatchAction(string path, ChangeType type,string replaceString, string searchingString)
 	{
+		Path = path;
 		Type = type;
 		ReplaceString = replaceString;
 		SearchingString = searchingString;
 	}
 	
-	public PatchAction(ChangeType type, List<Chunk> chunks, string searchingString)
+	public PatchAction(string path ,ChangeType type, List<Chunk> chunks, string searchingString)
 	{
+		Path = path;
 		Type = type;
 		Chunks = chunks;
 		SearchingString = searchingString;
@@ -28,6 +31,8 @@ public class PatchAction
 
 	public readonly ChangeType Type;
 
+	public string Path;
+	
 	/// <summary>
 	/// This is what the new file will be
 	/// </summary>

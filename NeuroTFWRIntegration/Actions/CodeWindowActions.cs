@@ -58,7 +58,7 @@ public static class CodeWindowActions
 			{
 				if (previousWindows.Contains(kvp.Key)) continue;
 				
-				Logger.Info($"renaming window: {kvp.Value.fileName}");
+				Utilities.Logger.Info($"renaming window: {kvp.Value.fileName}");
 				kvp.Value.Rename(parsedData);
 				break;
 			}
@@ -84,7 +84,7 @@ public static class CodeWindowActions
 			foreach (var window in WorkspaceState.CurrentWorkspace.codeWindows)
 			{
 				contextString += $"\n{window.Key}";
-				Logger.Info($"windows: {window.Key}   {window.Value.CodeInput.text}");
+				Utilities.Logger.Info($"windows: {window.Key}   {window.Value.CodeInput.text}");
 			}
 
 			Context.Send(contextString);

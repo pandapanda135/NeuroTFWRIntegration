@@ -53,13 +53,7 @@ public abstract class Parser
 	
 
 	#region Symbols
-
-	protected List<string> ValidFileNames;
-	/// <summary>
-	/// This is for the path sent in a patch.
-	/// </summary>
-	protected string ModifiedFilePath = "";
-
+	
 	protected string StartPatch = "";
 	protected string SeparatePatch = "";
 	protected string EndPatch = "";
@@ -86,7 +80,7 @@ public abstract class Parser
 	/// </summary>
 	protected readonly string ProvidedPatchString;
 
-	public Patch Patch = new("",[]);
+	public Patch Patch = new([]);
 
 	/// <summary>
 	/// This holds the provided patch's lines
@@ -94,7 +88,12 @@ public abstract class Parser
 	public List<string> Lines = new();
 
 	/// <inheritdoc cref="GetCurrentLine"/>
-	protected string CurrentLine => GetCurrentLine();
+	
+	protected readonly List<string> ValidFileNames;
+	/// <summary>
+	/// This is for the path sent in a patch.
+	/// </summary>
+	protected string ModifiedFilePath = "";
 
 	protected int Index;
 
@@ -105,31 +104,40 @@ public abstract class Parser
 	/// </summary>
 	/// <returns>This will return the current line according to <see cref="Index"/> and <see cref="Lines"/>. If the index is greater than the amount of lines, an exception will happen.</returns>
 	/// <exception cref="IndexOutOfRangeException"></exception>
-	private string GetCurrentLine()
+	protected string GetCurrentLine(int index = -1)
 	{
-		if (Index >= Lines.Count) throw new IndexOutOfRangeException("The parser's index was greater than the line count.");
-		return Lines[Index];
+		index = index == -1 ? Index : index;
+		
+		if (index >= Lines.Count) throw new IndexOutOfRangeException("The parser's index was greater than the line count.");
+		return Lines[index];
 	}
 
 	/// <summary>
 	/// Get the current line and check if it contains a patch format e.g. <see cref="StartPatch"/>. If it does, it will advance the index and return the next line.
 	/// </summary>
+	/// <param name="patchFormat">This is the part of the format that you want to look for.</param>
+	/// <param name="nextLine">This is the next line after the patch format, this next line is also the current line.</param>
+	/// <param name="index">This is for if you want to look for an arbitrary line in Lines and get it's next line, if this is any value that is not -1 it will be set to Index</param>
 	/// <returns>Will return true if the format is specified else false. If the next string is out of bounds, then line will be an empty string</returns>
-	protected bool ReadString(string patchFormat, out string line)
+	protected bool ReadString(string patchFormat, out string nextLine, int index = -1)
 	{
-		line = "";
-		if (!CurrentLine.Contains(patchFormat)) return false;
+		index = index == -1 ? Index : index;
+		nextLine = "";
+		if (!GetCurrentLine().Contains(patchFormat)) return false;
 
-		string currentLine = CurrentLine;
-		Index++;
+		string currentLine = GetCurrentLine(index);
+		if (index == Index) Index++;
+		// This is not be a reference of Index so we don't just increase this in an else.
+		index++;
+		
 		// could throw an error if index is out of bounds
 		try
 		{
-			line = CurrentLine;
+			nextLine = GetCurrentLine(index);
 		}
 		catch (Exception e)
 		{
-			line = "";
+			nextLine = "";
 			// This could cause issues with formats other than SearchParser, but it is the only decent solution I can think of right now. 
 			if (currentLine == EndPatch)
 				return true;
@@ -137,8 +145,8 @@ public abstract class Parser
 			Logger.Error($"Index was out of bounds {e}");
 			throw;
 		}
-		Logger.Info($"read string line: {line}");
-
+		
+		Logger.Info($"read string line: {nextLine}");
 		return true;
 	}
 
@@ -170,15 +178,10 @@ public abstract class Parser
 
 	private void ParsePatchString(string patchString)
 	{
-		// this is for testing provided file name
-		// var window = GetWindowFromPatch(patchString);
-		// if (window is null)
-		// 	throw new ParsingException("There was an issue getting the name of the file.",
-		// 		ParsingErrors.InvalidFileName);
-		
 		Lines = GetLines(patchString);
-		ModifiedFilePath = GetPatchFile(Lines);
-		if (string.IsNullOrEmpty(ModifiedFilePath))
+		ModifiedFilePath = GetPatchFilePath(Lines);
+		
+		if (string.IsNullOrEmpty(ModifiedFilePath) || !ValidFileNames.Contains(ModifiedFilePath))
 		{
 			throw new ParsingException(
 				$"There was an issue with getting the patch's file, this is what was received: {ModifiedFilePath}",
@@ -198,7 +201,8 @@ public abstract class Parser
 		
 		if (Patch.Actions.Any(action => !_openFile(ModifiedFilePath).Contains(action.SearchingString)))
 		{
-			throw new ParsingException("The file you provided does not contain the contents you are searching for.", ParsingErrors.InvalidFileName);
+			throw new ParsingException($"{ModifiedFilePath} does not contain the contents you are searching for.",
+				ParsingErrors.InvalidFileName);
 		}
 	}
 
@@ -210,14 +214,17 @@ public abstract class Parser
 	{
 		foreach (var action in patch.Actions)
 		{
-			string fileString = _openFile(patch.Path);
+			string fileString = _openFile(action.Path);
 
+			// we replace whole file if searching is not defined
 			if (action.SearchingString == string.Empty)
 			{
 				action.NewFile = action.ReplaceString;
+				Logger.Info($"action new file empty search: {action.NewFile}     searching file: {action.SearchingString}");
 				continue;
 			}
 			action.NewFile = fileString.Replace(action.SearchingString, action.ReplaceString);
+			Logger.Info($"action new file: {action.NewFile}");
 		}
 
 		return patch;
@@ -235,18 +242,11 @@ public abstract class Parser
 	public abstract Patch TextToPatch(string text);
 	
 	/// <summary>
-	/// Get the windows that are mentioned in the patch
-	/// </summary>
-	/// <param name="text">The patch's text</param>
-	/// <returns>The code windows targeted in the patch</returns>
-	// public abstract List<CodeWindow> GetWindows(string text);
-	
-	/// <summary>
 	/// Return where the patch wants to modify
 	/// </summary>
 	/// <param name="patchText"></param>
 	/// <returns>This should return the name of the file that it comes from.</returns>
-	protected abstract string GetPatchFile(List<string> patchText);
+	protected abstract string GetPatchFilePath(List<string> patchText);
 
 	/// <summary>
 	/// This is meant to parse the patch that was input and create a <see cref="BasePatch"/> that includes those actions.
@@ -306,6 +306,7 @@ public abstract class Parser
 
 		foreach (var action in patch.Actions)
 		{
+			Logger.Info($"action path: {action.Path}");
 			var fileChanges = new FileChanges(action.Type);
 			switch (action.Type)
 			{
@@ -313,20 +314,27 @@ public abstract class Parser
 					fileChanges.NewContext = action.NewFile;
 					break;
 				case ChangeType.Delete:
-					fileChanges.OldContent = _openFile(patch.Path);
+					fileChanges.OldContent = _openFile(action.Path);
 					break;
 				case ChangeType.Change:
 					fileChanges.NewContext = action.NewFile;
-					fileChanges.OldContent = _openFile(patch.Path);
+					fileChanges.OldContent = _openFile(action.Path);
 					break;
 				case ChangeType.Move:
-					fileChanges.MovePath = patch.Path;
+					fileChanges.MovePath = action.Path;
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(commit), "Commits can only apply the types valid in ChangeType.");
 			}
-			
-			commit.Changes.Add(ModifiedFilePath, fileChanges);
+
+			if (commit.Changes.ContainsKey(action.Path)) commit.Changes[action.Path].Add(fileChanges);
+			else
+			{
+				if (commit.Changes.TryAdd(action.Path, [fileChanges])) continue;
+				
+				throw new ParsingException("Tried to add multiple commit changes that have the same key.",
+					ParsingErrors.CommitIssue);
+			}
 		}
 		
 		return commit;
@@ -334,35 +342,48 @@ public abstract class Parser
 
 	private void ApplyCommit(Commit commit)
 	{
-		foreach (var change in commit.Changes)
+		foreach (var commitKvp in commit.Changes)
 		{
-			string path = change.Key;
+			string path = commitKvp.Key;
 			if (string.IsNullOrEmpty(path))
 				throw new ParsingException("The path for this commit was either empty or null",ParsingErrors.MissingCommitContent);
-			switch (change.Value.Type)
+
+			foreach (var change in commitKvp.Value)
 			{
-				case ChangeType.Add:
-					if (change.Value.NewContext is null)
-						throw new ParsingException("The new context was missing from this commit.",ParsingErrors.MissingCommitContent);
-					_writeFile(path, change.Value.NewContext);
-					break;
-				case ChangeType.Change:
-					if (change.Value.NewContext is null)
-						throw new ParsingException("The new context was missing from this commit.",ParsingErrors.MissingCommitContent);
-					// we don't need this any more, gonna keep until proper testing is done. 
-					
-					// not tested. need to get search
-					// This should be searchLines as a string from searchParser I think.
-					// var content = change.Value.OldContent.Replace(change.Value.NewContext);
-					_writeFile(path, change.Value.NewContext);
-					break;
-				case ChangeType.Delete:
-					_deleteFile(path);
-					break;
-				case ChangeType.Move:
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(commit), "Commits can only apply the types in ChangeType.");
+				switch (change.Type)
+				{
+					case ChangeType.Add:
+					{
+						// we do this to support patch formats that don't allow for setting a file's contents while creating it.
+						_writeFile(path, change.NewContext ?? "");
+						break;
+					}
+					case ChangeType.Change:
+					{
+						if (change.NewContext is null)
+							throw new ParsingException("The new context was missing from this commit.",ParsingErrors.MissingCommitContent);
+						_writeFile(path, change.NewContext);
+						break;
+					}
+					case ChangeType.Delete:
+					{
+						_deleteFile(path);
+						break;
+					}
+					case ChangeType.Move:
+					{
+						if (change.MovePath is null)
+							throw new ParsingException($"The move path was not set when wanting to move {path}.",
+								ParsingErrors.MissingCommitContent);
+						string fileContent = _openFile(path);
+
+						_deleteFile(path);
+						_writeFile(change.MovePath, fileContent);
+						break;
+					}
+					default:
+						throw new ArgumentOutOfRangeException(nameof(commit), "Commits can only apply the types in ChangeType.");
+				}
 			}
 		}
 	}
@@ -375,6 +396,7 @@ public enum ParsingErrors
 	InvalidFileName,
 	ParsingIssue,
 	MissingCommitContent,
+	CommitIssue
 }
 
 public class ParsingException(string message, ParsingErrors reason) : Exception
