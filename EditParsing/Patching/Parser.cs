@@ -126,11 +126,9 @@ public abstract class Parser
 		if (!GetCurrentLine().Contains(patchFormat)) return false;
 
 		string currentLine = GetCurrentLine(index);
-		Logger.Info($"current line: {currentLine}");
 		if (index == Index) Index++;
 		// This is not be a reference of Index so we don't just increase this in an else.
 		index++;
-		Logger.Info($"index plus {index}   {Index}");
 		
 		// could throw an error if index is out of bounds
 		try
@@ -224,7 +222,7 @@ public abstract class Parser
 			if (action.SearchingString == string.Empty)
 			{
 				action.NewFile = action.ReplaceString;
-				Logger.Info($"action new file empty search: {action.NewFile}");
+				Logger.Info($"action new file empty search: {action.NewFile}     searching file: {action.SearchingString}");
 				continue;
 			}
 			action.NewFile = fileString.Replace(action.SearchingString, action.ReplaceString);

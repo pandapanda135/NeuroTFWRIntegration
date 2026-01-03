@@ -24,7 +24,7 @@ public static class TestingStrings
 	/// This is a patch with an empty search block.
 	/// </summary>
 	public const string EmptySearchPatch =
-		"main\\n```\\n<<<<<<< SEARCH\\n=======\\nfrom variable_values import max_pos\\nwhile True:\\n\\tmove(North)\\n\\tif can_harvest():\\n\\t\\tharvest()\\n\\tif get_pos_y() == max_pos:\\n\\t\\tmove(East)\\n\\t\\twhile get_pos_y() > 0:\\n\\t\\t\\tmove(South)\\n>>>>>>> REPLACE\\n```";
+		"main\\n```\\n<<<<<<< SEARCH\\n=======\\nfrom variable_values import max_pos\\nwhile True:\\n\\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n\t\twhile get_pos_y() > 0:\n\t\t\tmove(South)\n>>>>>>> REPLACE\n```";
 	
 	/// <summary>
 	/// This is a patch with an empty replace block.
@@ -33,5 +33,8 @@ public static class TestingStrings
 		"main\\n```\\n<<<<<<< SEARCH\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n=======\n>>>>>>> REPLACE\\n```";
 	
 	public const string MultipleActionPatch =
-		"main\n```\n<<<<<<< SEARCH\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n=======\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n\t\twhile get_pos_y() > 0:\n\t\t\tmove(South)\n>>>>>>> REPLACE\n<<<<<<< SEARCH\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n=======\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n\t\twhile get_pos_y() > 0:\n\t\t\tmove(South)\n>>>>>>> REPLACE\n```";
+		"main\n```\n<<<<<<< SEARCH\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n=======\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n\t\twhile get_pos_y() > 0:\n\t\t\tmove(South)\n>>>>>>> REPLACE\n<<<<<<< SEARCH\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n=======\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n\t\twhile get_pos_y() > 0:\n\t\t\tmove(South)\n>>>>>>> REPLACE\n```";
+	
+	public const string MultipleFilePatch =
+		"main\n```\n<<<<<<< SEARCH\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n=======\nThis is the replace test.\n>>>>>>> REPLACE\n```\nsecond\n```\n<<<<<<< SEARCH\nfrom variable_values import max_pos\nwhile True:\n\tmove(North)\n\tif can_harvest():\n\t\tharvest()\n\tif get_pos_y() == max_pos:\n\t\tmove(East)\n=======\nThis is the replace test.\n>>>>>>> REPLACE\\n```";
 }
