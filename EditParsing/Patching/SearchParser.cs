@@ -143,7 +143,7 @@ public class SearchParser : Parser
 		return new(0, new(), new());
 	}
 
-	private int CheckForSymbol(int startingIndex, string symbol)
+	private int SymbolNextIndex(int startingIndex, string symbol)
 	{
 		var nextSymbolIndex = Lines.FindIndex(startingIndex,line => line == symbol);
 		if (nextSymbolIndex != Lines.FindIndex(startingIndex, line => line.Contains(symbol)))
@@ -169,7 +169,7 @@ public class SearchParser : Parser
 			if (ReadString(SearchPatch, out _))
 			{
 				List<string> searchLines = [];
-				var nextSymbolIndex = CheckForSymbol(Index, SeparatePatch);
+				var nextSymbolIndex = SymbolNextIndex(Index, SeparatePatch);
 				for (int i = Index; i < nextSymbolIndex; i++)
 				{
 					Logger.Info($"searching text lines: {GetCurrentLine()}");
@@ -185,7 +185,7 @@ public class SearchParser : Parser
 			if (ReadString(SeparatePatch, out _))
 			{
 				List<string> lines = [];
-				var nextSymbolIndex = CheckForSymbol(Index, ReplacePatch);
+				var nextSymbolIndex = SymbolNextIndex(Index, ReplacePatch);
 				for (int i = Index; i < nextSymbolIndex; i++)
 				{
 					Logger.Info($"replace text lines: {GetCurrentLine()}");

@@ -181,7 +181,7 @@ public abstract class Parser
 		Lines = GetLines(patchString);
 		ModifiedFilePath = GetPatchFilePath(Lines);
 		
-		if (string.IsNullOrEmpty(ModifiedFilePath))
+		if (string.IsNullOrEmpty(ModifiedFilePath) || !ValidFileNames.Contains(ModifiedFilePath))
 		{
 			throw new ParsingException(
 				$"There was an issue with getting the patch's file, this is what was received: {ModifiedFilePath}",
