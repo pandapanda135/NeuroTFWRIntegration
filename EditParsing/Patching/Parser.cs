@@ -178,8 +178,6 @@ public abstract class Parser
 
 	private void ParsePatchString(string patchString)
 	{
-		// TODO: separate a patch that has multiple files into different patch classes and each search and replace is it's own action?
-		// TODO: or move file path to action and use action.
 		Lines = GetLines(patchString);
 		ModifiedFilePath = GetPatchFilePath(Lines);
 		

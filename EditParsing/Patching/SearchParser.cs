@@ -30,7 +30,7 @@ public class SearchParser : Parser
 		ReplacePatch = ">>>>>>> REPLACE";
 		EndPatch = "```";
 	}
-
+	
 	protected override bool IsDone()
 	{
 		return Index >= Lines.Count;
@@ -41,9 +41,6 @@ public class SearchParser : Parser
 		Lines = GetLines(text);
 		return ParseInputPatch();
 	}
-
-	// public override List<CodeWindow> GetWindows(string text) => WorkspaceHelpers.CurrentWorkspace.codeWindows.Select(kvp =>
-	// 	kvp.Value).Where(window => text.Contains(window.fileName)).ToList();
 
 	protected override string GetPatchFilePath(List<string> patchText)
 	{
@@ -59,7 +56,6 @@ public class SearchParser : Parser
 		{
 			throw new ParsingException($"The provided file name was not valid, you provided: {ModifiedFilePath}", ParsingErrors.InvalidFileName);
 		}
-		
 		Logger.Info($"window name: {ModifiedFilePath}");
 
 		string currentPath = ModifiedFilePath;
@@ -80,15 +76,13 @@ public class SearchParser : Parser
 						ParsingErrors.ParsingIssue);
 				}				Logger.Info($"start patch next line: {next}");
 				
-				// we check if the next is search as end and start are the same. We cannot check in if as we need to reduce index 
+				// we check if the next is search as end and start are the same. 
 				if (next == SearchPatch)
 				{
 					startedBlock = true;
-					// this gets the file
 					currentPath = GetCurrentLine(Index - 2);
 					continue;
 				}
-
 			}
 
 			var actions = InsideFileBlock(currentPath);
@@ -104,9 +98,6 @@ public class SearchParser : Parser
 			{
 				startedBlock = false;
 				Logger.Info($"end patch was found: {empty}");
-				// TODO: this is where we can check for multiple file blocks
-				// if there are multiple file blocks they should be separated by an empty line so we need to skip by increasing.
-				// we also need to get the new file name
 				
 				while (!IsDone())
 				{
@@ -175,10 +166,9 @@ public class SearchParser : Parser
 		while (!IsDone())
 		{
 			// this is the text to search for.
-			if (ReadString(SearchPatch, out var nextLine))
+			if (ReadString(SearchPatch, out _))
 			{
 				List<string> searchLines = [];
-				Logger.Info($"next line thing: {nextLine}");
 				var nextSymbolIndex = CheckForSymbol(Index, SeparatePatch);
 				for (int i = Index; i < nextSymbolIndex; i++)
 				{
@@ -188,7 +178,6 @@ public class SearchParser : Parser
 				}
 				
 				currentAction.SearchingString = string.Join("\n", searchLines);
-				Logger.Info($"searching string in parse input patch: {currentAction.SearchingString}");
 				continue;
 			}
 
@@ -211,10 +200,6 @@ public class SearchParser : Parser
 			// replace patch
 			if (ReadString(ReplacePatch, out var end))
 			{
-				// TODO: we need to change this to be if there is an empty string then check for multiple patches for that file.
-				
-				// TODO: this will not work if there is an empty line after the end of the current patch separating the next and current patch.
-				// TODO: IDK if that should be supported but I care enough to put this here.
 				if (end == EndPatch) break;
 				
 				if (!ReadString(SearchPatch, out var endPatchLine, Index + 1) || endPatchLine == "")
