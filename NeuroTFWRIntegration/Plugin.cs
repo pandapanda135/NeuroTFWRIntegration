@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using NeuroSdk.Messages.Outgoing;
 using NeuroTFWRIntegration.Actions;
+using NeuroTFWRIntegration.ContextHandlers;
 using NeuroTFWRIntegration.Patches;
 using NeuroTFWRIntegration.Utilities;
 using TMPro;
@@ -45,6 +47,7 @@ public class Plugin : BaseUnityPlugin
 		Harmony.CreateAndPatchAll(typeof(RegisterPatches));
 		Harmony.CreateAndPatchAll(typeof(ContextPatches));
 		
+		Context.Send($"{Strings.StartGameContext}");
 		RegisterMainActions.PopulateActionLists();
 	}
 
