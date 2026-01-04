@@ -1,13 +1,17 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NeuroSdk.Actions;
 using NeuroTFWRIntegration.Utilities;
-
 namespace NeuroTFWRIntegration.Actions;
 
 public static class RegisterMainActions
 {
 	private static bool _mainRegistered;
+
+	private static readonly List<Type> NoWindowsActions = new();
+
+	private static readonly List<Type> AllActions = new();
 	
 	public static void RegisterMain()
 	{
@@ -15,17 +19,14 @@ public static class RegisterMainActions
 		_mainRegistered = true;
 		if (!WorkspaceState.CodeWindows.Any())
 		{
-			NeuroActionHandler.RegisterActions(new CodeWindowActions.CreateWindow());
+			NeuroActionHandler.RegisterActions(CreateActionClasses(NoWindowsActions));
 			return;
 		}
-
-		List<INeuroAction> actions = new();
-		// for some reason this requires closing and opening a menu after pressing play to work,
-		// IDK why IDK how to fix it, and I've spent way too much time trying to get it to work already
-		if (WorkspaceState.Sim.researchMenu.allBoxes.Count > 0)
-			actions.Add(new DocsActions.GetDocumentation());
 		
-		actions.AddRange([new PatchActions.GetWindowCode(), new PatchActions.WritePatch(), new CodeWindowActions.CreateWindow()]);
+		// for some reason documentation requires closing and opening a menu after pressing play to populate schema,
+		// IDK why IDK how to fix it, and I've spent way too much time trying to get it to work already
+		var actions = CreateActionClasses(AllActions);
+
 		NeuroActionHandler.RegisterActions(actions);
 	}
 	
@@ -34,18 +35,49 @@ public static class RegisterMainActions
 		if (!_mainRegistered) return;
 		_mainRegistered = false;
 		
-		// if there is only one or no code windows and all the mains are not registered.
+		// if there is only one or no code windows and the main actions are not registered.
 		if (WorkspaceState.CodeWindows.Count < 2 && NeuroActionHandler.GetRegistered($"{new PatchActions.WritePatch().Name}") is null)
 		{
-			NeuroActionHandler.UnregisterActions(new CodeWindowActions.CreateWindow());
+			NeuroActionHandler.UnregisterActions(CreateActionClasses(NoWindowsActions));
 			return;
 		}
-		List<INeuroAction> actions = new();
 		
-		if (WorkspaceState.Sim.researchMenu.allBoxes.Any())
-			actions.Add(new DocsActions.GetDocumentation());
+		// I believe this also includes actions registered via action windows
+		var actions = CreateActionClasses(AllActions, action => NeuroActionHandler.GetRegistered(action.Name) is null);
 		
-		actions.AddRange([new PatchActions.GetWindowCode(), new PatchActions.WritePatch(), new CodeWindowActions.CreateWindow()]);
 		NeuroActionHandler.UnregisterActions(actions);
+	}
+
+	private static List<INeuroAction> CreateActionClasses(List<Type> actionTypes, Func<INeuroAction, bool>? customChecks = null)
+	{
+		List<INeuroAction> actions = new();
+		foreach (var type in actionTypes)
+		{
+			if (Activator.CreateInstance(type) is not INeuroAction action) continue;
+
+			Utilities.Logger.Info($"test actions: {action.Name}  {customChecks != null && customChecks(action)}   any boxes: {WorkspaceState.ValidBoxes.Any(box => box.Value.unlockState is UnlockBox.UnlockState.Unlocked)}");
+			if (customChecks is not null && customChecks(action)) continue;
+			
+			actions.Add(action);
+		}
+
+		return actions;
+	}
+
+	public static void PopulateActionLists()
+	{
+		AllActions.AddRange([
+			typeof(PatchActions.GetWindowCode), typeof(PatchActions.WritePatch), typeof(CodeWindowActions.CreateWindow),
+			typeof(QueryActions.QueryItems), typeof(DocsActions.GetDocumentation), typeof(QueryActions.QueryDrone),
+			typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)
+		]);
+		
+		NoWindowsActions.AddRange([typeof(CodeWindowActions.CreateWindow), typeof(QueryActions.QueryItems),
+			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)]);
+
+		if (Plugin.ResearchMenuActions?.Value != ResearchMenuActions.OutOfMenu) return;
+		
+		AllActions.AddRange([typeof(ResearchActions.QueryUpgrades), typeof(ResearchActions.BuyUpgrade)]);
+		NoWindowsActions.AddRange([typeof(ResearchActions.QueryUpgrades), typeof(ResearchActions.BuyUpgrade)]);
 	}
 }

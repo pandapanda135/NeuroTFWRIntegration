@@ -1,6 +1,6 @@
 using BepInEx.Logging;
 
-namespace NeuroTFWRIntegration;
+namespace NeuroTFWRIntegration.Utilities;
 
 internal static class Logger
 {
