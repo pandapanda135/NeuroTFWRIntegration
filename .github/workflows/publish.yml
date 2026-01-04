@@ -63,4 +63,4 @@ jobs:
           cp out/EditParsing.dll NeuroTFWRIntegration/
           zip -r NeuroTFWRIntegration.zip NeuroTFWRIntegration
 
-          gh release create "$RELEASE_TAG" -F ../../release-notes.md NeuroTFWRIntegration.zip
+          gh release create "$RELEASE_TAG" -F ../release-notes.md NeuroTFWRIntegration.zip
