@@ -108,8 +108,8 @@ public static class ResearchActions
 		var boxes = onlyUnlockable ? WorkspaceState.UnlockableBoxes : WorkspaceState.ValidBoxes;
 		return string.Join("\n", boxes.Select<KeyValuePair<string, UnlockBox>, string>(kvp =>
 			{
-				string text =
-					$"## {kvp.Value.unlockSO.unlockName}\n### Description\n{Localizer.Localize(kvp.Value.unlockSO.description)}\n### {(kvp.Value.unlockState is UnlockBox.UnlockState.Upgradable ? "Upgrade Cost" : "Unlock Cost")}";
+				string text = $"## {kvp.Value.unlockSO.unlockName}\n### Description\n{StringUtils.RemoveTextMeshTags(Localizer.Localize(kvp.Value.unlockSO.description))}" +
+				              $"\n### {(kvp.Value.unlockState is UnlockBox.UnlockState.Upgradable ? "Upgrade Cost" : "Unlock Cost")}";
 				foreach (var item in kvp.Value.unlockSO.unlockCost.serializeList)
 				{
 					text += $"\n- {item.name} amount: {item.nr}";
