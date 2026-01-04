@@ -7,6 +7,12 @@ This is an integration for the game [The Farmer Was Replaced](https://store.stea
 - This was developed with [BepinEx 5.4.23.4](https://github.com/BepInEx/BepInEx/releases/tag/v5.4.23.4).
 - You shouldn't have to download anything else.
 
+## Installing
+
+You can get the released versions from the releases tab, all you should need to do is extract the zip and add the folder to the plugins folder in the BepInEx folder where the game is installed.
+
+The config can be modified in the config folder of the same BepInEx installation, the file should be called com.pandapanda135.NeuroTFWRIntegration.cfg if it is not present you may need to start the game.
+
 ## Building
 
 After pulling from this repo, the only steps you should need to do are to restore the project's dependencies and to set GamePath in NeuroTFWRIntegration to the game's folder. (The folder containing the exe file to run the game.)
