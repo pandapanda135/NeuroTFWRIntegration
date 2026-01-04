@@ -21,7 +21,7 @@ public class Plugin : BaseUnityPlugin
 
 	private static ConfigEntry<string>? _websocketUrl;
 	
-	public static ConfigEntry<bool>? ResearchMenuActions;
+	public static ConfigEntry<ResearchMenuActions>? ResearchMenuActions;
 
 	public static ConfigEntry<bool>? Debug;
 	
@@ -75,7 +75,6 @@ public class Plugin : BaseUnityPlugin
 		if (UnityInput.Current.GetKey(KeyCode.Z))
 		{
 			_waitNext = 1;
-
 			
 			var window = Instantiate(WorkspaceState.CurrentWorkspace.docWinPrefab, WorkspaceState.Sim.inv.container);
 			Logger.LogInfo($"container: {window.container}");
@@ -95,6 +94,7 @@ public class Plugin : BaseUnityPlugin
 					Logger.LogInfo($"link: {link.GetLink()}");
 				}
 			}
+			Logger.LogInfo($"debug paths: {string.Join("\n", paths)}");
 			
 			Destroy(window.gameObject);
 		}

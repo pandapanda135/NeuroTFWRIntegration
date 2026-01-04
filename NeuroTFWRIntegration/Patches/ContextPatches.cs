@@ -28,12 +28,15 @@ public class ContextPatches
 			__instance.errorMessage.errorText.text,lineCount,__instance.errorStartIndex - nonErrorCharacters));
 	}
 	
-	
+
+	/// <summary>
+	/// This is here to send context when the other playing buys an upgrade
+	/// </summary>
 	[HarmonyPatch(typeof(UnlockBox), nameof(UnlockBox.ButtonClicked))]
 	[HarmonyPostfix]
 	public static void PostUnlockBox(UnlockBox __instance)
 	{
-		if (Plugin.ResearchMenuActions is not null && Plugin.ResearchMenuActions.Value) return;
+		if (Plugin.ResearchMenuActions?.Value != ResearchMenuActions.None) return;
 
 		// this will happen if the item is maxed 
 		if (WorkspaceState.Farm.GetUnlockCost(__instance.unlockSO) == null ||

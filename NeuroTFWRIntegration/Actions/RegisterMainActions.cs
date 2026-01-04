@@ -9,9 +9,9 @@ public static class RegisterMainActions
 {
 	private static bool _mainRegistered;
 
-	private static List<Type> _noBoxesActions = new();
+	private static readonly List<Type> NoWindowsActions = new();
 
-	private static List<Type> _allActions = new();
+	private static readonly List<Type> AllActions = new();
 	
 	public static void RegisterMain()
 	{
@@ -19,13 +19,13 @@ public static class RegisterMainActions
 		_mainRegistered = true;
 		if (!WorkspaceState.CodeWindows.Any())
 		{
-			NeuroActionHandler.RegisterActions(CreateActionClasses(_noBoxesActions));
+			NeuroActionHandler.RegisterActions(CreateActionClasses(NoWindowsActions));
 			return;
 		}
 		
 		// for some reason documentation requires closing and opening a menu after pressing play to populate schema,
 		// IDK why IDK how to fix it, and I've spent way too much time trying to get it to work already
-		var actions = CreateActionClasses(_allActions);
+		var actions = CreateActionClasses(AllActions);
 
 		NeuroActionHandler.RegisterActions(actions);
 	}
@@ -38,12 +38,12 @@ public static class RegisterMainActions
 		// if there is only one or no code windows and the main actions are not registered.
 		if (WorkspaceState.CodeWindows.Count < 2 && NeuroActionHandler.GetRegistered($"{new PatchActions.WritePatch().Name}") is null)
 		{
-			NeuroActionHandler.UnregisterActions(CreateActionClasses(_noBoxesActions));
+			NeuroActionHandler.UnregisterActions(CreateActionClasses(NoWindowsActions));
 			return;
 		}
 		
 		// I believe this also includes actions registered via action windows
-		var actions = CreateActionClasses(_allActions, action => NeuroActionHandler.GetRegistered(action.Name) is null);
+		var actions = CreateActionClasses(AllActions, action => NeuroActionHandler.GetRegistered(action.Name) is null);
 		
 		NeuroActionHandler.UnregisterActions(actions);
 	}
@@ -66,13 +66,18 @@ public static class RegisterMainActions
 
 	public static void PopulateActionLists()
 	{
-		_allActions.AddRange([
+		AllActions.AddRange([
 			typeof(PatchActions.GetWindowCode), typeof(PatchActions.WritePatch), typeof(CodeWindowActions.CreateWindow),
 			typeof(QueryActions.QueryItems), typeof(DocsActions.GetDocumentation), typeof(QueryActions.QueryDrone),
 			typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)
 		]);
 		
-		_noBoxesActions.AddRange([typeof(CodeWindowActions.CreateWindow), typeof(QueryActions.QueryItems),
+		NoWindowsActions.AddRange([typeof(CodeWindowActions.CreateWindow), typeof(QueryActions.QueryItems),
 			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)]);
+
+		if (Plugin.ResearchMenuActions?.Value != ResearchMenuActions.OutOfMenu) return;
+		
+		AllActions.AddRange([typeof(ResearchActions.QueryUpgrades), typeof(ResearchActions.BuyUpgrade)]);
+		NoWindowsActions.AddRange([typeof(ResearchActions.QueryUpgrades), typeof(ResearchActions.BuyUpgrade)]);
 	}
 }
