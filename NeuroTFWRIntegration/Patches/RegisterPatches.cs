@@ -1,10 +1,11 @@
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using HarmonyLib;
 using NeuroSdk.Actions;
 using NeuroSdk.Messages.Outgoing;
 using NeuroTFWRIntegration.Actions;
 using NeuroTFWRIntegration.Utilities;
+using UnityEngine;
 
 namespace NeuroTFWRIntegration.Patches;
 
@@ -38,31 +39,36 @@ public static class RegisterPatches
 	[HarmonyPrefix]
 	public static void SetupResearchMenu()
 	{
+		Plugin.Instance?.StartCoroutine(SetupResearchMenuRoutine());
+	}
+
+	private static IEnumerator SetupResearchMenuRoutine()
+	{
+		// we do this to prevent her running actions while the menu is open.
+		if (WorkspaceState.ResearchMenuOpen)
+		{
+			yield return new WaitForSeconds(0.25f);
+			RegisterMainActions.RegisterMain();
+		}
+		else
+		{
+			RegisterMainActions.UnregisterMain();	
+		}
+		
 		Utilities.Logger.Info($"docs: {string.Join("\n",WorkspaceState.Sim.researchMenu.allBoxes.Select(box => box.Value.unlockSO.docs))}");
 		
+		// everything here is either handled by the action or not needed by it
+		if (Plugin.ResearchMenuActions?.Value == ResearchMenuActions.OutOfMenu)
+		{
+			yield break;
+		}
+		
 		// unlockable or upgradeable
-		string getBoxesText = string.Join("\n", WorkspaceState.Sim.researchMenu.allBoxes
-			.Where(kvp => kvp.Value.unlockState is UnlockBox.UnlockState.Unlockable or UnlockBox.UnlockState.Upgradable)
-			.Select<KeyValuePair<string, UnlockBox>, string>(kvp =>
-			{
-				string text = $"## {kvp.Value.unlockSO.unlockName}\n### Description\n{Localizer.Localize(kvp.Value.unlockSO.description)}\n### {(kvp.Value.unlockState is UnlockBox.UnlockState.Upgradable ? "Upgrade Cost" : "Unlock Cost")}";
-				foreach (var item in kvp.Value.unlockSO.unlockCost.serializeList)
-				{
-					text += $"\n- {item.name} amount: {item.nr}";
-				}
-
-				if (!string.IsNullOrEmpty(kvp.Value.unlockSO.docs))
-				{
-					text += $"\n### Docs Path\n {kvp.Value.unlockSO.docs}";
-				}
-
-				return text;
-			})
-		);
-		if (Plugin.ResearchMenuActions is not null && !Plugin.ResearchMenuActions.Value)
+		string getBoxesText = ResearchActions.GetBoxesText();
+		if (Plugin.ResearchMenuActions is not null && Plugin.ResearchMenuActions.Value == ResearchMenuActions.None)
 		{
 			Context.Send($"# Available Upgrades\n{getBoxesText}");
-			return;
+			yield break;
 		}
 
 		var window = ActionWindow.Create(WorkspaceState.Object);
