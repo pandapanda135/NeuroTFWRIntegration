@@ -23,9 +23,7 @@ public static class ResearchActions
 			Required = ["name"],
 			Properties = new()
 			{
-				["name"] = QJS.Enum(WorkspaceState.Sim.researchMenu.allBoxes.Where(kvp => kvp.Value.unlockState is
-					UnlockBox.UnlockState.Unlocked or UnlockBox.UnlockState.Unlockable or UnlockBox.UnlockState.Upgradable && kvp.Value.unlockSO.enabled)
-					.Select(kvp => kvp.Value.unlockSO.unlockName).ToList())
+				["name"] = QJS.Enum(WorkspaceState.UnlockableBoxes.Select(kvp => kvp.Value.unlockSO.unlockName).ToList())
 			}
 		};
 		protected override ExecutionResult Validate(ActionJData actionData, out string? parsedData)
@@ -37,19 +35,14 @@ public static class ResearchActions
 			{
 				return ExecutionResult.Failure($"You did not provide a valid value.");
 			}
-			
-			if (!WorkspaceState.Sim.researchMenu.allBoxes.Where(kvp => kvp.Value.unlockState is
-				    UnlockBox.UnlockState.Unlocked or UnlockBox.UnlockState.Unlockable
-				    or UnlockBox.UnlockState.Upgradable)
-			    .Select(kvp => kvp.Value.unlockSO.unlockName).Contains(name))
+
+			var validBoxes = WorkspaceState.UnlockableBoxes;
+			if (!validBoxes.Select(kvp => kvp.Value.unlockSO.unlockName).Contains(name))
 			{
 				return ExecutionResult.Failure($"The name you provided is not a valid upgrade or unlock.");
 			}
 			
-			var (_, box) = WorkspaceState.Sim.researchMenu.allBoxes.Where(kvp => kvp.Value.unlockState is
-					UnlockBox.UnlockState.Unlocked or UnlockBox.UnlockState.Unlockable
-					or UnlockBox.UnlockState.Upgradable)
-				.First(kvp => kvp.Value is not null && kvp.Value.unlockSO.unlockName == name);
+			var (_, box) = validBoxes.First(kvp => kvp.Value is not null && kvp.Value.unlockSO.unlockName == name);
 
 			if (box is null) return ExecutionResult.Failure($"The name you provided is not a valid upgrade or unlock.");
 			foreach (var item in box.unlockSO.unlockCost.serializeList)
@@ -73,7 +66,7 @@ public static class ResearchActions
 			Plugin.Instance?.StartCoroutine(ExecuteRoutine(parsedData));
 		}
 
-		private IEnumerator ExecuteRoutine(string parsedData)
+		private static IEnumerator ExecuteRoutine(string parsedData)
 		{
 			if (Plugin.ResearchMenuActions?.Value == ResearchMenuActions.OutOfMenu)
 			{
@@ -82,10 +75,7 @@ public static class ResearchActions
 				yield return new WaitForSeconds(1);
 			}
 
-			var (_, box) = WorkspaceState.Sim.researchMenu.allBoxes.Where(kvp => kvp.Value.unlockState is
-					UnlockBox.UnlockState.Unlocked or UnlockBox.UnlockState.Unlockable
-					or UnlockBox.UnlockState.Upgradable)
-				.First(kvp => kvp.Value.unlockSO.unlockName == parsedData);
+			var (_, box) = WorkspaceState.UnlockableBoxes.First(kvp => kvp.Value.unlockSO.unlockName == parsedData);
 			
 			box.ButtonClicked();
 			
@@ -113,13 +103,13 @@ public static class ResearchActions
 		}
 	}
 
-	public static string GetBoxesText()
+	public static string GetBoxesText(bool onlyUnlockable = false)
 	{
-		return string.Join("\n", WorkspaceState.Sim.researchMenu.allBoxes
-			.Where(kvp => kvp.Value.unlockState is UnlockBox.UnlockState.Unlockable or UnlockBox.UnlockState.Upgradable)
-			.Select<KeyValuePair<string, UnlockBox>, string>(kvp =>
+		var boxes = onlyUnlockable ? WorkspaceState.UnlockableBoxes : WorkspaceState.ValidBoxes;
+		return string.Join("\n", boxes.Select<KeyValuePair<string, UnlockBox>, string>(kvp =>
 			{
-				string text = $"## {kvp.Value.unlockSO.unlockName}\n### Description\n{Localizer.Localize(kvp.Value.unlockSO.description)}\n### {(kvp.Value.unlockState is UnlockBox.UnlockState.Upgradable ? "Upgrade Cost" : "Unlock Cost")}";
+				string text =
+					$"## {kvp.Value.unlockSO.unlockName}\n### Description\n{Localizer.Localize(kvp.Value.unlockSO.description)}\n### {(kvp.Value.unlockState is UnlockBox.UnlockState.Upgradable ? "Upgrade Cost" : "Unlock Cost")}";
 				foreach (var item in kvp.Value.unlockSO.unlockCost.serializeList)
 				{
 					text += $"\n- {item.name} amount: {item.nr}";

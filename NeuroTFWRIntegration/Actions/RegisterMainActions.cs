@@ -55,7 +55,7 @@ public static class RegisterMainActions
 		{
 			if (Activator.CreateInstance(type) is not INeuroAction action) continue;
 
-			Utilities.Logger.Info($"test actions: {action.Name}  {customChecks != null && customChecks(action)}   any boxes: {WorkspaceState.Sim.researchMenu.allBoxes.Any(box => box.Value.unlockState is UnlockBox.UnlockState.Unlocked)}");
+			Utilities.Logger.Info($"test actions: {action.Name}  {customChecks != null && customChecks(action)}   any boxes: {WorkspaceState.ValidBoxes.Any(box => box.Value.unlockState is UnlockBox.UnlockState.Unlocked)}");
 			if (customChecks is not null && customChecks(action)) continue;
 			
 			actions.Add(action);
