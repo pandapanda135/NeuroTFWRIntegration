@@ -49,6 +49,6 @@ public abstract class BaseToast : MonoBehaviour
 			yield return null;
 		}
 		
-		DestroyImmediate(this);
+		Destroy(gameObject);
 	}
 }

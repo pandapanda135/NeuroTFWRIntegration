@@ -59,6 +59,7 @@ public class Plugin : BaseUnityPlugin
 		
 		Context.Send($"{Strings.StartGameContext}");
 		RegisterMainActions.PopulateActionLists();
+		AddToastsContainer();
 	}
 
 	private AssetBundle? _bundle;
@@ -80,7 +81,6 @@ public class Plugin : BaseUnityPlugin
 
 		if (UnityInput.Current.GetKey(KeyCode.H))
 		{
-			AddToastsContainer();
 			var toastPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "validation-toast");
 
 			_toastBundle = AssetBundleHelper.GetAssetBundle(toastPath);
@@ -138,6 +138,11 @@ public class Plugin : BaseUnityPlugin
 	private static readonly string ContainerPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "toastcontainer");
 	private void AddToastsContainer()
 	{
+		if (GameObject.Find("ToastsContainer") is not null)
+		{
+			return;
+		}
+		
 		_bundle = AssetBundleHelper.GetAssetBundle(ContainerPath);
 		if (_bundle is null)
 		{
@@ -145,7 +150,7 @@ public class Plugin : BaseUnityPlugin
 		}
 
 		Logger.LogInfo($"creating toast");
-		var container = AssetBundleHelper.LoadBundle(ContainerPath, "Assets/ToastsContainer 1.prefab");
+		var container = AssetBundleHelper.LoadBundle(ContainerPath, "Assets/ToastsContainer.prefab");
 		if (container is null)
 		{
 			throw new NullReferenceException("container was null, there was an issue when loading it.");
