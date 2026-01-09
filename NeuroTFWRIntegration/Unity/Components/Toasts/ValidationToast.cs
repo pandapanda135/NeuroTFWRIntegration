@@ -1,6 +1,4 @@
 using System;
-using NeuroTFWRIntegration.Unity.Components.Toasts;
-using TMPro;
 using UnityEngine;
 using Image = UnityEngine.UI.Image;
 
@@ -24,7 +22,7 @@ public class ValidationToast : BaseToast
 	
 	public void Init(string descriptionText, ValidationLevels level, Color? flavourColour = null)
 	{
-		SetText(descriptionText);
+		SetText("ContentsContainer/DescriptionText", descriptionText);
 		SetValidationImage(level);
 		if (flavourColour is not null)
 		{
@@ -36,12 +34,6 @@ public class ValidationToast : BaseToast
 		}
 
 		InitCore();
-	}
-
-	public override void CloseClicked()
-	{
-		Utilities.Logger.Info($"close button clicked");
-		Plugin.Instance?.StartCoroutine(Fade(0, 0));
 	}
 
 	private void SetValidationColour(ValidationLevels level)
@@ -65,6 +57,7 @@ public class ValidationToast : BaseToast
 		}
 	}
 	
+	// this may or may not end up getting used.
 	private void SetValidationImage(ValidationLevels validation)
 	{
 		var find = transform.Find("ContentsContainer/WarningValidationImage");
@@ -86,12 +79,5 @@ public class ValidationToast : BaseToast
 	{
 		var flavour = transform.Find("FlavourColour");
 		flavour.GetComponent<Image>().color = color;
-	}
-
-	private void SetText(string text)
-	{
-		var descriptionTransform = transform.Find("ContentsContainer/DescriptionText");
-		var textGui = descriptionTransform.GetComponent<TextMeshProUGUI>();
-		textGui.text = text;
 	}
 }

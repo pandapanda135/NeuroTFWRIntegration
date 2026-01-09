@@ -69,11 +69,13 @@ public static class RegisterMainActions
 		AllActions.AddRange([
 			typeof(PatchActions.GetWindowCode), typeof(PatchActions.WritePatch), typeof(CodeWindowActions.CreateWindow),
 			typeof(QueryActions.QueryItems), typeof(DocsActions.GetDocumentation), typeof(QueryActions.QueryDrone),
-			typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)
+			typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin), typeof(ToastActions.CreateToast)
 		]);
 		
 		NoWindowsActions.AddRange([typeof(CodeWindowActions.CreateWindow), typeof(QueryActions.QueryItems),
-			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)]);
+			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin),
+			typeof(ToastActions.CreateToast)
+		]);
 
 		if (Plugin.ResearchMenuActions?.Value != ResearchMenuActions.OutOfMenu) return;
 		

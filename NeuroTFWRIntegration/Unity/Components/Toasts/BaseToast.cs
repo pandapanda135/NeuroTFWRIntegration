@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,8 +27,12 @@ public abstract class BaseToast : MonoBehaviour
 	{
 		return;
 	}
-
-	public abstract void CloseClicked();
+	
+	public virtual void CloseClicked()
+	{
+		Utilities.Logger.Info($"pressed on close clicked");
+		Plugin.Instance?.StartCoroutine(Fade(0, 0));
+	}
 	
 	public IEnumerator Fade(float waitTime, float duration)
 	{
@@ -50,5 +55,17 @@ public abstract class BaseToast : MonoBehaviour
 		}
 		
 		Destroy(gameObject);
+	}
+	
+	protected void SetText(string findPath, string text)
+	{
+		var descriptionTransform = transform.Find(findPath);
+		if (descriptionTransform is null)
+		{
+			Utilities.Logger.Error($"description transform was null");
+			return;
+		}
+		var textGui = descriptionTransform.GetComponent<TextMeshProUGUI>();
+		textGui.text = text;
 	}
 }

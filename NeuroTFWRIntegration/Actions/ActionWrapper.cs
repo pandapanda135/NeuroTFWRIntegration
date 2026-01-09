@@ -59,10 +59,9 @@ public abstract class BaseNeuroActionWrapper : INeuroAction
 
 	protected void AddToast(ExecutionResult result)
 	{
-		var toast = ToastsManager.CreateToastObject(
+		var toast = ToastsManager.CreateValidationToast(
 			result.Successful
-				? string.Format(Strings.SuccessfulToast, Name)
-				: string.Format(Strings.UnsuccessfulToast, Name),
+				? string.Format(Strings.SuccessfulToast, Name) : string.Format(Strings.UnsuccessfulToast, Name),
 			result.Successful ? ValidationToast.ValidationLevels.Success : ValidationToast.ValidationLevels.Failure);
 		if (toast is null)
 		{
