@@ -12,7 +12,7 @@ namespace NeuroTFWRIntegration.Actions;
 
 public static class QueryActions
 {
-	public class QueryItems : NeuroAction
+	public class QueryItems : NeuroActionWrapper
 	{
 		public override string Name => "query_items";
 		protected override string Description => "Get the amount of each item you have.";
@@ -39,7 +39,7 @@ public static class QueryActions
 		}
 	}
 	
-	public class QueryDrone : NeuroAction
+	public class QueryDrone : NeuroActionWrapper
 	{
 		public override string Name => "query_drone";
 		protected override string Description => "Sends information about your drones.";
@@ -62,7 +62,7 @@ public static class QueryActions
 		}
 	}
 
-	public class QueryWorld : NeuroAction<Vector2Int?>
+	public class QueryWorld : NeuroActionWrapper<Vector2Int?>
 	{
 		public override string Name => "query_world";
 		protected override string Description =>
@@ -130,7 +130,7 @@ public static class QueryActions
 		}
 	}
 
-	public class QueryBuiltin : NeuroAction<string?>
+	public class QueryBuiltin : NeuroActionWrapper<string?>
 	{
 		private readonly string[] _validOptions = ["entities", "items", "hats", "functions", "grounds"];
 		public override string Name => "query_builtin";

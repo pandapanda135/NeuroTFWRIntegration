@@ -12,7 +12,7 @@ namespace NeuroTFWRIntegration.Actions;
 
 public static class ResearchActions
 {
-	public class BuyUpgrade : NeuroAction<string>
+	public class BuyUpgrade : NeuroActionWrapper<string>
 	{
 		public override string Name => "buy_research_box";
 		protected override string Description => "Buy a research box.";
@@ -87,7 +87,7 @@ public static class ResearchActions
 		}
 	}
 	
-	public class QueryUpgrades : NeuroAction
+	public class QueryUpgrades : NeuroActionWrapper
 	{
 		public override string Name => "query_upgrades";
 		protected override string Description => "Query the upgrades that are available in the tech tree.";

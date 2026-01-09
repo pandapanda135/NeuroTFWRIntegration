@@ -14,7 +14,7 @@ namespace NeuroTFWRIntegration.Actions;
 
 public static class PatchActions
 {
-	public class WritePatch : NeuroAction<string>
+	public class WritePatch : NeuroActionWrapper<string>
 	{
 		public override string Name => "write_patch";
 		protected override string Description => "Write a patch to modify the code in this code window. The format is" +
@@ -79,7 +79,7 @@ public static class PatchActions
 		}
 	}
 
-	private class GetAllWindowCode : NeuroAction
+	private class GetAllWindowCode : NeuroActionWrapper
 	{
 		public override string Name => "get_all_window_code";
 
@@ -110,7 +110,7 @@ public static class PatchActions
 		}
 	}
 
-	public class GetWindowCode : NeuroAction<string>
+	public class GetWindowCode : NeuroActionWrapper<string>
 	{
 		public override string Name => "get_window_code";
 		protected override string Description => "Get the code of specific window";
