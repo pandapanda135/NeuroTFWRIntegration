@@ -10,4 +10,7 @@ public static class Strings
 	"Certain features that are typically in python are either not available to be used when you start playing or are not available in this language. " +
 	"You should try to only stick to only keywords that you have unlocked (you can get this information from actions like get_documentation and query_builtin)" +
 	" and features that are very basic. So try to avoid more advanced features like f-strings as most of them wont work.";
+
+	public const string SuccessfulToast = "{0} was ran successfully";
+	public const string UnsuccessfulToast = "{0} was ran unsuccessfully";
 }
