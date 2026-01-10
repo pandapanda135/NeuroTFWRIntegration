@@ -34,7 +34,7 @@ public abstract class BaseToast : MonoBehaviour
 		Plugin.Instance?.StartCoroutine(Fade(0, 0));
 	}
 	
-	public IEnumerator Fade(float waitTime, float duration)
+	public IEnumerator Fade(float waitTime, float fadeOutDuration)
 	{
 		if (_canvasGroup is null) yield break;
 		float currentWaitTime = 0f;
@@ -47,10 +47,10 @@ public abstract class BaseToast : MonoBehaviour
 		float startAlpha = _canvasGroup.alpha;
 		float t = 0f;
 
-		while (t < duration)
+		while (t < fadeOutDuration)
 		{
 			t += Time.deltaTime;
-			_canvasGroup.alpha = Mathf.Lerp(startAlpha, 0f, t / duration);
+			_canvasGroup.alpha = Mathf.Lerp(startAlpha, 0f, t / fadeOutDuration);
 			yield return null;
 		}
 		

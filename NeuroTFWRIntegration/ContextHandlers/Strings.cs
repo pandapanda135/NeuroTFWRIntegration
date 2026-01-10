@@ -12,5 +12,6 @@ public static class Strings
 	" and features that are very basic. So try to avoid more advanced features like f-strings as most of them wont work.";
 
 	public const string SuccessfulToast = "{0} was ran successfully";
-	public const string UnsuccessfulToast = "{0} was ran unsuccessfully";
+	public const string UnsuccessfulToastNoMessage = "{0} was ran unsuccessfully, no reason was given.";
+	public const string UnsuccessfulToast = "{0} was ran unsuccessfully, the reason was {1}";
 }

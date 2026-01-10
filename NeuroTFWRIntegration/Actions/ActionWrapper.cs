@@ -2,7 +2,6 @@ using NeuroSdk.Actions;
 using NeuroSdk.Json;
 using NeuroSdk.Websocket;
 using NeuroTFWRIntegration.ContextHandlers;
-using NeuroTFWRIntegration.Unity;
 using NeuroTFWRIntegration.Unity.Components.Toasts;
 using UnityEngine;
 
@@ -57,14 +56,17 @@ public abstract class BaseNeuroActionWrapper : INeuroAction
 		ActionWindow = actionWindow;
 	}
 
-	protected void AddToast(ExecutionResult result)
+	protected virtual void AddToast(ExecutionResult result)
 	{
-		var toast = ToastsManager.CreateValidationToast(
-			result.Successful
-				? string.Format(Strings.SuccessfulToast, Name) : string.Format(Strings.UnsuccessfulToast, Name),
+		string text = result.Successful ? string.Format(Strings.SuccessfulToast, Name) : string.Format(Strings.UnsuccessfulToastNoMessage, Name);
+		if (!result.Successful && !string.IsNullOrEmpty(result.Message))
+			text = string.Format(Strings.UnsuccessfulToast, Name, result.Message);
+		
+		var toast = ToastsManager.CreateValidationToast(text,
 			result.Successful ? ValidationToast.ValidationLevels.Success : ValidationToast.ValidationLevels.Failure);
 		if (toast is null)
 		{
+			Utilities.Logger.Error($"toast was null in base AddToast, result was: {result.Successful}  {result.Message}");
 			return;
 		}
 

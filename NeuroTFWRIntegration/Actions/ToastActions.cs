@@ -48,5 +48,10 @@ public static class ToastActions
 			}
 			Plugin.ToastsManager?.AddToast(toast);
 		}
+		
+		protected override void AddToast(ExecutionResult result)
+		{
+			if (!result.Successful) base.AddToast(result);
+		}
 	}
 }
