@@ -4,7 +4,7 @@ using System.IO;
 public class BuildAssetBundles
 {
   [MenuItem("Assets/Build AssetBundles")]
-  static void BuildAllAssetBundles()
+  public static void BuildAllAssetBundles()
   {
     string path = "AssetBundles";
     if (!Directory.Exists(path))
@@ -15,7 +15,5 @@ public class BuildAssetBundles
         BuildAssetBundleOptions.None,
         EditorUserBuildSettings.activeBuildTarget
     );
-    
-    
   }
 }

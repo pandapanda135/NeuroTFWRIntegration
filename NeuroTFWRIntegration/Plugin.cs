@@ -9,6 +9,7 @@ using NeuroTFWRIntegration.Actions;
 using NeuroTFWRIntegration.ContextHandlers;
 using NeuroTFWRIntegration.Patches;
 using NeuroTFWRIntegration.Unity;
+using NeuroTFWRIntegration.Unity.Components.Chat;
 using NeuroTFWRIntegration.Unity.Components.Toasts;
 using NeuroTFWRIntegration.Utilities;
 using TMPro;
@@ -60,6 +61,7 @@ public class Plugin : BaseUnityPlugin
 		Context.Send($"{Strings.StartGameContext}");
 		RegisterMainActions.PopulateActionLists();
 		AddToastsContainer();
+		CreateChat();
 	}
 
 	private AssetBundle? _bundle;
@@ -178,5 +180,62 @@ public class Plugin : BaseUnityPlugin
 		}
 
 		_toastContainer = containerInst;
+	}
+	
+	private static readonly string ChatPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "neuro-chat");
+	private void CreateChat()
+	{
+		if (GameObject.Find("NeuroChat") is not null)
+		{
+			return;
+		}
+
+		if (!File.Exists(ChatPath))
+		{
+			Logger.LogError($"could not find neuro-chat file.");
+			return;
+		}
+		
+		AssetBundle bundle = AssetBundleHelper.GetAssetBundle(ChatPath);
+		if (bundle is null)
+		{
+			throw new NullReferenceException("Toast's container AssetBundle was null.");
+		}
+
+		Logger.LogInfo($"creating chat");
+		var chat = AssetBundleHelper.LoadBundle(ChatPath, "Assets/NeuroChat.prefab");
+		if (chat is null)
+		{
+			throw new NullReferenceException("container was null, there was an issue when loading it.");
+		}
+		chat.AddComponent(typeof(NeuroChat));
+		var overlay = GameObject.Find("OverlayUI");
+		if (overlay is null)
+		{
+			throw new NullReferenceException($"There was an issue finding OverlayUI.");
+		}
+		
+		Logger.LogInfo($"instantiating NeuroChat");
+		var chatInst = Instantiate(chat, overlay.transform, false);
+		
+		// var rect = chatInst.GetComponent<RectTransform>();
+		// rect.anchorMin = Vector2.zero;
+		// rect.anchorMax = Vector2.one;
+		// rect.offsetMin = Vector2.zero;
+		// rect.offsetMax = Vector2.zero;
+		
+		// chatInst.transform.localPosition = new Vector3(0,0,0);
+		// chatInst.transform.position = new Vector3(0,0,0);
+		// chatInst.transform.localRotation = Quaternion.identity;
+		// chatInst.transform.localScale = Vector3.one;
+		
+		chatInst.SetActive(true);
+		chatInst.transform.SetAsFirstSibling();
+
+		// Canvas canvas = chatInst.GetComponent<Canvas>();
+		// if (canvas)
+		// {
+		// 	canvas.sortingOrder = int.MaxValue;
+		// }
 	}
 }
