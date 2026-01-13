@@ -74,11 +74,15 @@ public static class PatchActions
 				Utilities.Logger.Error($"What the fuck happened here: {e}");
 				Context.Send($"There was an error when trying to apply the patch you just sent, you should either," +
 				             $" tell the person you are playing with and see if they can help you or try something else.");
+				PostExecuteAction?.Invoke();
 				throw;
 			}
+			
+			PostExecuteAction?.Invoke();
 		}
 	}
 
+	[Obsolete("Removed in favour of window specific fetching.")]
 	private class GetAllWindowCode : NeuroActionWrapper
 	{
 		public override string Name => "get_all_window_code";

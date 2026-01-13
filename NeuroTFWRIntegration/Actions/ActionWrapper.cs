@@ -1,3 +1,4 @@
+using System;
 using NeuroSdk.Actions;
 using NeuroSdk.Json;
 using NeuroSdk.Websocket;
@@ -10,6 +11,10 @@ namespace NeuroTFWRIntegration.Actions;
 /// <inheritdoc/>
 public abstract class BaseNeuroActionWrapper : INeuroAction
 {
+	/// <summary>
+	/// This can hold a method that will be run after execute, if validation is not successful this will not be ran.
+	/// </summary>
+	public Action? PostExecuteAction = null;
 	public virtual ActionWindow? ActionWindow { get; private set; }
 	
 	public abstract string Name { get; }
@@ -34,7 +39,7 @@ public abstract class BaseNeuroActionWrapper : INeuroAction
 	protected abstract ExecutionResult Validate(ActionJData actionData, out object? parsedData);
 	
 	void INeuroAction.Execute(object? data) => Execute(data);
-	public abstract void Execute(object? data);
+	protected abstract void Execute(object? data);
 	
 	public virtual WsAction GetWsAction()
 	{
@@ -90,7 +95,11 @@ public abstract class NeuroActionWrapper : BaseNeuroActionWrapper
 		return result;
 	}
 
-	public sealed override void Execute(object? data) => Execute();
+	protected sealed override void Execute(object? data)
+	{
+		Execute();
+		PostExecuteAction?.Invoke();
+	}
 }
 
 
@@ -110,7 +119,11 @@ public abstract class NeuroActionWrapper<TData> : BaseNeuroActionWrapper
 		return result;
 	}
 
-	public sealed override void Execute(object? parsedData) => Execute((TData?) parsedData);
+	protected sealed override void Execute(object? parsedData)
+	{
+		Execute((TData?)parsedData);
+		PostExecuteAction?.Invoke();
+	}
 }
 
 /// <inheritdoc/>

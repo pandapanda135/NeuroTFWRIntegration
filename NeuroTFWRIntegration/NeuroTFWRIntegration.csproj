@@ -65,6 +65,6 @@
                 SourceFiles="@(AssetBundles)"
                 DestinationFolder="$(BepinExPath)$(TargetName)/AssetBundles"
                 OverwriteReadOnlyFiles="true"/>
-        <Message Text="Finished copying all plugin files." Importance="high"/>
+        <Message Text="Finished copying all AssetBundles." Importance="high"/>
     </Target>
 </Project>
