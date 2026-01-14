@@ -71,11 +71,9 @@ public static class RegisterPatches
 			yield break;
 		}
 
-		var window = ActionWindow.Create(WorkspaceState.Object);
-		window.AddAction(new ResearchActions.BuyUpgrade());
-		window.SetForce(0, "You are now in the research menu where you can buy upgrades to help you.",
-			$"# Possible Upgrades\n{getBoxesText}", true);
-		window.Register();
+		ActionWindow.Create(WorkspaceState.Object).AddAction(new ResearchActions.BuyUpgrade()).SetForce(0,
+			"You are now in the research menu where you can buy upgrades to help you.",
+			$"# Possible Upgrades\n{getBoxesText}", true).Register();
 	}
 
 	/// <summary>

@@ -159,20 +159,15 @@ public static class CodeWindowActions
 		protected override void Execute(CodeWindow? parsedData)
 		{
 			parsedData?.PressExecuteOrStop();
-			var window = ActionWindow.Create(WorkspaceState.Object);
-			// window.AddAction(new GetWindows()).AddAction(new ExecuteWindow())
-			// 	.AddAction(new SelectWindow());
-			window.Register();
 		}
 	}
 	
 	private static void RegisterSelectedWindow(CodeWindow codeWindow)
 	{
-		var window = ActionWindow.Create(WorkspaceState.Object);
-		window.SetForce(0, $"You are interacting with a window with the name of {codeWindow.fileName}",
-			$"This is the code of this window: {codeWindow.CodeInput.text}", true);
 		// window.AddAction(new WritePatch());
 		// window.AddAction(new ExecuteWindow());
-		window.Register();
+		ActionWindow.Create(WorkspaceState.Object).SetForce(0,
+			$"You are interacting with a window with the name of {codeWindow.fileName}",
+			$"This is the code of this window: {codeWindow.CodeInput.text}", true).Register();
 	}
 }

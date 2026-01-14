@@ -109,17 +109,16 @@ public class NeuroChat : BaseChat
 		// we probably won't need existing error at this point.
 		ChangeErrorText("");
 		RegisterMainActions.UnregisterMain();
-
-		var actionWindow = ActionWindow.Create(WorkspaceState.Object);
-
-		actionWindow.SetForce(0, "You have been asked to write a patch for a window by whoever you are playing with.",
-			$"This is the code in the windows they want you to modify, {WindowFileSystem.Open(option.text)}\nThis is the prompt they sent you.\n{prompt}");
-
-		var patchAction = new PatchActions.WritePatch();
-		patchAction.PostExecuteAction = RegisterMainActions.RegisterMain;
+		var patchAction = new PatchActions.WritePatch
+		{
+			PostExecuteAction = RegisterMainActions.RegisterMain
+		};
 		
-		actionWindow.AddAction(patchAction).AddAction(new DenyRequest());
-		actionWindow.Register();
+		ActionWindow.Create(WorkspaceState.Object).AddAction(patchAction).AddAction(new DenyRequest())
+			.SetForce(0, "You have been asked to write a patch for a window by whoever you are playing with.",
+				$"This is the code in the windows they want you to modify.\nFile name: {option.text}\n{WindowFileSystem.Open(option.text)}\nThis is the prompt they sent you.\n{prompt}",
+				true)
+			.Register();
 	}
 
 	private static void ValueChanged(int arg0)
