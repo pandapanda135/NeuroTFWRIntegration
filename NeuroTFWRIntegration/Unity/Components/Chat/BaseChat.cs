@@ -1,7 +1,5 @@
-using System;
 using NeuroTFWRIntegration.Utilities;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Button = UnityEngine.UI.Button;
 
 namespace NeuroTFWRIntegration.Unity.Components.Chat;
@@ -14,13 +12,13 @@ public class BaseChat : MonoBehaviour
 	
 	protected void AwakeCore()
 	{
-		Utilities.Logger.Info($"crating base chat");
+		Utilities.Logger.Info($"creating base chat");
 		
 		Utilities.Logger.Info($"finding");
-		var find = GameObject.Find("MainContainer");
+		var find = GameObject.Find("MainButton");
 		if (!find)
 		{
-			Utilities.Logger.Error($"could not find main container");
+			Utilities.Logger.Error($"could not find main button");
 			return;
 		}
 
@@ -30,6 +28,7 @@ public class BaseChat : MonoBehaviour
 			Utilities.Logger.Error($"could not find button");
 			return;
 		}
+		Utilities.Logger.Info($"setting onclick listener");
 		component.onClick.AddListener(OpenClicked);
 	}
 	

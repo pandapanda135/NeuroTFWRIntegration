@@ -24,7 +24,7 @@ public class NeuroChat : BaseChat
 	{
 		MainGroup = GetComponent<CanvasGroup>();
 		GameObject.Find("Submit").GetComponent<Button>().onClick.AddListener(SubmitPrompt);
-		GameObject.Find("WindowDropdown").GetComponent<TMP_Dropdown>().onValueChanged.AddListener(ValueChanged);
+		GameObject.Find("WindowDropdown").GetComponent<TMP_Dropdown>().onValueChanged.AddListener(DropdownChanged);
 		Extension = GameObject.Find("Extension");
 		_errorText = GameObject.Find("ErrorText");
 		AwakeCore();
@@ -121,7 +121,7 @@ public class NeuroChat : BaseChat
 			.Register();
 	}
 
-	private static void ValueChanged(int arg0)
+	private static void DropdownChanged(int _)
 	{
 		_dropDownBeenChanged = true;
 	}
@@ -180,5 +180,8 @@ internal class DenyRequest : NeuroActionWrapper<string?>
 	}
 
 	protected override void AddToast(ExecutionResult result)
-	{}
+	{
+		if (!result.Successful)
+			base.AddToast(result);
+	}
 }

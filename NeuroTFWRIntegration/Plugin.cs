@@ -230,12 +230,5 @@ public class Plugin : BaseUnityPlugin
 		// chatInst.transform.localScale = Vector3.one;
 		
 		chatInst.SetActive(true);
-		chatInst.transform.SetAsFirstSibling();
-
-		// Canvas canvas = chatInst.GetComponent<Canvas>();
-		// if (canvas)
-		// {
-		// 	canvas.sortingOrder = int.MaxValue;
-		// }
 	}
 }
