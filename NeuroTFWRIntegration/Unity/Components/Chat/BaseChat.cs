@@ -62,17 +62,11 @@ public class BaseChat : MonoBehaviour
 		Utilities.Logger.Info($"base chat started");
 	}
 
-	private void Update()
+	// we use FixedUpdate as it should load to less lag than Update due to it being based on ticks not framerate
+	private void FixedUpdate()
 	{
-		if (WorkspaceState.MenuOpen)
-		{
-			MainGroup?.alpha = 0;
-		}
-		else
-		{
-			if (MainGroup?.alpha > 0) return;
-			
-			MainGroup?.alpha = 1;
-		}
+		// I think the performance cost of this shouldn't be that bad, and it's quite clean.
+		MainGroup?.alpha = WorkspaceState.MenuOpen ? 0 : 1;
+		MainGroup?.interactable = !WorkspaceState.MenuOpen;
 	}
 }

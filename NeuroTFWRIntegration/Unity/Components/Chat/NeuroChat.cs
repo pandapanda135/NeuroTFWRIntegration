@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using BepInEx;
 using NeuroSdk.Actions;
 using NeuroSdk.Json;
 using NeuroSdk.Websocket;
@@ -16,56 +18,73 @@ namespace NeuroTFWRIntegration.Unity.Components.Chat;
 
 public class NeuroChat : BaseChat
 {
-	private static List<string> _options = new();
-	private static bool _dropDownBeenChanged;
+	private static readonly string ButtonPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "chat-window-button");
 
-	private static GameObject? _errorText;
+	private Button? _submitButton;
+	private GameObject? _windowGrid;
+	private GameObject? _errorText;
+	private GameObject? _windowsErrorText;
+	
 	private void Awake()
 	{
 		MainGroup = GetComponent<CanvasGroup>();
-		GameObject.Find("Submit").GetComponent<Button>().onClick.AddListener(SubmitPrompt);
-		GameObject.Find("WindowDropdown").GetComponent<TMP_Dropdown>().onValueChanged.AddListener(DropdownChanged);
 		Extension = GameObject.Find("Extension");
+		
+		_submitButton = GameObject.Find("Submit").GetComponent<Button>();
+		_submitButton.onClick.AddListener(SubmitPrompt);
+		_windowGrid = GameObject.Find("WindowGrid");
 		_errorText = GameObject.Find("ErrorText");
+		_windowsErrorText = GameObject.Find("SelectWindowsErrorText");
 		AwakeCore();
 		
-		PopulateWindowList();
 		Extension.SetActive(false);
+		_windowsErrorText.SetActive(false);
 	}
-
+	
 	public override void OpenClicked()
 	{
 		Utilities.Logger.Info($"clicked open");
 		// we reset this whether it is being opened or not.
-		_dropDownBeenChanged = false;
 		ChangeErrorText("");
 		base.OpenClicked();
 		
-		PopulateWindowList();
+		if (ChatOpen) PopulateWindowList();
 	}
 	
-	private static void PopulateWindowList()
+	private void PopulateWindowList()
 	{
-		Utilities.Logger.Info($"prompting windows");
-		var find = GameObject.Find("WindowDropdown");
-		if (!find)
+		// reset all buttons and prevent overflow
+		for (int i = 0; i < _windowGrid?.transform.childCount; i++)
 		{
-			Utilities.Logger.Error($"find was null");
+			Destroy(_windowGrid.transform.GetChild(i).gameObject);
+		}
+
+		if (!WorkspaceState.CodeWindows.Any())
+		{
+			ChangeErrorText("It seems there are no valid windows to select :(", _windowsErrorText);
+			return;
+		}
+
+		var obj = LoadWindowButton(typeof(WindowButton));
+		if (!_windowGrid)
+		{
+			Utilities.Logger.Error($"window grid was null when adding PopulateWindowList");
+			ChangeErrorText("There was an internal issue when finding window grid. Oops!", _windowsErrorText);
 			return;
 		}
 		
-		var component = find.GetComponent<TMP_Dropdown>();
-		if (!component)
+		obj.transform.localScale = new Vector3(0.5f, 0.5f, 0f);
+		foreach (var kvp in WorkspaceState.CodeWindows)
 		{
-			Utilities.Logger.Error($"dropdown was null");
-			return;
+			obj.GetComponent<WindowButton>().SetDisplay(kvp);
+			Instantiate(obj, _windowGrid.transform);
 		}
-		component.ClearOptions();
-		_options = WorkspaceState.CodeWindows.Keys.ToList();
-		component.AddOptions(_options);
+		
+		// I think this is good practice
+		AssetBundleHelper.UnloadBundle(ButtonPath);
 	}
 
-	private static void SubmitPrompt()
+	private void SubmitPrompt()
 	{
 		try
 		{
@@ -73,7 +92,9 @@ public class NeuroChat : BaseChat
 		}
 		catch (PromptException promptException)
 		{
-			ChangeErrorText(promptException.Reason == PromptException.Reasons.Internal ? $"There was an internal issue, this is the reason: {promptException.Message}" : promptException.Message);
+			ChangeErrorText(promptException.Reason == PromptException.Reasons.Internal 
+				? $"There was an internal issue, this is the reason: {promptException.Message}" 
+				: promptException.Message);
 		}
 		catch (Exception e)
 		{
@@ -82,24 +103,29 @@ public class NeuroChat : BaseChat
 		}
 	}
 
-	private static void ApplyPrompt()
+	private void ApplyPrompt()
 	{
-		var dropdown = GameObject.Find("WindowDropdown").GetComponent<TMP_Dropdown>();
-		if (dropdown is null)
+		List<CodeWindow> windows = new();
+		for (int i = 0; i < _windowGrid?.transform.childCount; i++)
 		{
-			throw new PromptException(PromptException.Reasons.Internal, "Drop down was null.");
+			var button = _windowGrid.transform.GetChild(i).GetComponent<WindowButton>();
+		
+			if (button.selected && button.codeWindow)
+				windows.Add(button.codeWindow);
+			else
+			{
+				if (!button.selected) continue;
+				
+				Utilities.Logger.Error($"There was an error when getting a code window as it was null, the button was" +
+				                       $"button.selected {button.displayString} selected: {button.selected}");
+			}
 		}
 
-		if (_options.Count == 0 || dropdown.value > _options.Count)
+		if (!windows.Any())
 		{
-			throw new PromptException(PromptException.Reasons.DropDown, "There are no allowed valid dropdown options.");
+			throw new PromptException(PromptException.Reasons.Windows, "You need to select at least one button.");
 		}
-		var option = dropdown.options[dropdown.value];
-		if (!_dropDownBeenChanged)
-		{
-			throw new PromptException(PromptException.Reasons.DropDown,
-				"You must change the value of the drop down to submit.");
-		}
+		
 		var prompt = GameObject.Find("PromptInput").GetComponent<TMP_InputField>().text;
 		if (string.IsNullOrEmpty(prompt))
 		{
@@ -113,31 +139,50 @@ public class NeuroChat : BaseChat
 		{
 			PostExecuteAction = RegisterMainActions.RegisterMain
 		};
+		string windowState = "";
+		foreach (var codeWindow in windows)
+		{
+			windowState += $"\n# File name\n{codeWindow.fileNameText.text}\n## Contents\n{WindowFileSystem.Open(codeWindow.fileName)}";
+		}
 		
 		ActionWindow.Create(WorkspaceState.Object).AddAction(patchAction).AddAction(new DenyRequest())
 			.SetForce(0, "You have been asked to write a patch for a window by whoever you are playing with.",
-				$"This is the code in the windows they want you to modify.\nFile name: {option.text}\n{WindowFileSystem.Open(option.text)}\nThis is the prompt they sent you.\n{prompt}",
+				$"This is the code in the windows they want you to modify.\n{windowState}\nThis is the prompt they sent you.\n{prompt}",
 				true)
 			.Register();
 	}
 
-	private static void DropdownChanged(int _)
+	private void ChangeErrorText(string text, GameObject? obj = null)
 	{
-		_dropDownBeenChanged = true;
+		obj ??= _errorText;
+		
+		obj?.SetActive(!string.IsNullOrEmpty(text));
+		obj?.GetComponent<TextMeshProUGUI>().text = text;
 	}
-
-	private static void ChangeErrorText(string text)
+	
+	private static GameObject LoadWindowButton(Type component)
 	{
-		_errorText?.SetActive(!string.IsNullOrEmpty(text));
-		_errorText?.GetComponent<TextMeshProUGUI>().text = text;
+		AssetBundle bundle = AssetBundleHelper.GetAssetBundle(ButtonPath);
+		if (bundle is null)
+		{
+			throw new NullReferenceException("Button's container AssetBundle was null.");
+		}
+		
+		var button = AssetBundleHelper.LoadBundle(ButtonPath, "Assets/WindowButtonCanvas.prefab");
+		if (button is null)
+		{
+			throw new NullReferenceException("button was null, there was an issue when loading it.");
+		}
+		button.AddComponent(component);
+		return button;
 	}
-
+	
 	protected class PromptException(PromptException.Reasons reason, string message) : Exception
 	{
 		public enum Reasons
 		{
 			Internal,
-			DropDown,
+			Windows,
 			Prompt
 		}
 
@@ -149,7 +194,7 @@ public class NeuroChat : BaseChat
 internal class DenyRequest : NeuroActionWrapper<string?>
 {
 	public override string Name => "deny_request";
-	protected override string Description => "Deny the request from the user. If you want to give them feedback you can by populating the feedback field.";
+	protected override string Description => "Deny the request from the user. If you want to give them feedback, you can, by populating the feedback field.";
 	protected override JsonSchema Schema => new()
 	{
 		Type = JsonSchemaType.Object,
@@ -162,20 +207,25 @@ internal class DenyRequest : NeuroActionWrapper<string?>
 	protected override ExecutionResult Validate(ActionJData actionData, out string? s)
 	{
 		s = actionData.Data?.Value<string?>("feedback");
+		
+		var toast = ToastsManager.CreateValidationToast("test", ValidationToast.ValidationLevels.Failure);
+		if (!toast)
+			return ExecutionResult.Failure($"There was an error creating the toast. This is an internal error oops");
+		
 		return ExecutionResult.Success();
 	}
 
 	protected override void Execute(string? s)
 	{
-		if (s is null)
-		{
-			ToastsManager.CreateValidationToast("Neuro denied your request.",
-				ValidationToast.ValidationLevels.Failure);
+		var toastDescription = s is null
+			? "Neuro denied your request."
+			: $"Neuro denied your request, this is the feedback she sent you.\n{s}";
+
+		var toast = ToastsManager.CreateValidationToast(toastDescription,ValidationToast.ValidationLevels.Failure);
+		if (!toast)
 			return;
-		}
 		
-		ToastsManager.CreateValidationToast($"Neuro denied your request, this is feedback she sent you.\n{s}",
-			ValidationToast.ValidationLevels.Failure);
+		Plugin.ToastsManager?.AddToast(toast);
 		RegisterMainActions.RegisterMain();
 	}
 
