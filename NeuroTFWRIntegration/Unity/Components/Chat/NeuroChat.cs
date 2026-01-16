@@ -24,6 +24,9 @@ public class NeuroChat : BaseChat
 	private GameObject? _windowGrid;
 	private GameObject? _errorText;
 	private GameObject? _windowsErrorText;
+	private GameObject? _promptInput;
+
+	private GameObject? _windowButton;
 	
 	private void Awake()
 	{
@@ -34,16 +37,19 @@ public class NeuroChat : BaseChat
 		_submitButton.onClick.AddListener(SubmitPrompt);
 		_windowGrid = GameObject.Find("WindowGrid");
 		_errorText = GameObject.Find("ErrorText");
-		_windowsErrorText = GameObject.Find("SelectWindowsErrorText");
+		_windowsErrorText = GameObject.Find("WindowsErrorText");
+		_promptInput = GameObject.Find("PromptInput");
 		AwakeCore();
 		
 		Extension.SetActive(false);
 		_windowsErrorText.SetActive(false);
+
+		_windowButton = LoadWindowButton(typeof(WindowButton));
+		_windowButton.transform.localScale = new Vector3(0.5f, 0.5f, 0f);
 	}
 	
 	public override void OpenClicked()
 	{
-		Utilities.Logger.Info($"clicked open");
 		// we reset this whether it is being opened or not.
 		ChangeErrorText("");
 		base.OpenClicked();
@@ -64,8 +70,7 @@ public class NeuroChat : BaseChat
 			ChangeErrorText("It seems there are no valid windows to select :(", _windowsErrorText);
 			return;
 		}
-
-		var obj = LoadWindowButton(typeof(WindowButton));
+		
 		if (!_windowGrid)
 		{
 			Utilities.Logger.Error($"window grid was null when adding PopulateWindowList");
@@ -73,15 +78,11 @@ public class NeuroChat : BaseChat
 			return;
 		}
 		
-		obj.transform.localScale = new Vector3(0.5f, 0.5f, 0f);
 		foreach (var kvp in WorkspaceState.CodeWindows)
 		{
-			obj.GetComponent<WindowButton>().SetDisplay(kvp);
-			Instantiate(obj, _windowGrid.transform);
+			_windowButton?.GetComponent<WindowButton>().SetDisplay(kvp);
+			Instantiate(_windowButton, _windowGrid.transform);
 		}
-		
-		// I think this is good practice
-		AssetBundleHelper.UnloadBundle(ButtonPath);
 	}
 
 	private void SubmitPrompt()
@@ -126,7 +127,7 @@ public class NeuroChat : BaseChat
 			throw new PromptException(PromptException.Reasons.Windows, "You need to select at least one button.");
 		}
 		
-		var prompt = GameObject.Find("PromptInput").GetComponent<TMP_InputField>().text;
+		var prompt = _promptInput?.GetComponent<TMP_InputField>().text;
 		if (string.IsNullOrEmpty(prompt))
 		{
 			throw new PromptException(PromptException.Reasons.Prompt, "You did not supply a prompt.");
@@ -174,6 +175,8 @@ public class NeuroChat : BaseChat
 			throw new NullReferenceException("button was null, there was an issue when loading it.");
 		}
 		button.AddComponent(component);
+		// I think this is good practice
+		AssetBundleHelper.UnloadBundle(ButtonPath);
 		return button;
 	}
 	

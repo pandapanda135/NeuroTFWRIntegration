@@ -23,8 +23,6 @@ public static class RegisterMainActions
 			return;
 		}
 		
-		// for some reason documentation requires closing and opening a menu after pressing play to populate schema,
-		// IDK why IDK how to fix it, and I've spent way too much time trying to get it to work already
 		var actions = CreateActionClasses(AllActions);
 
 		NeuroActionHandler.RegisterActions(actions);

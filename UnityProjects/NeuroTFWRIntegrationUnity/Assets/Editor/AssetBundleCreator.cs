@@ -1,19 +1,22 @@
 using UnityEditor;
 using System.IO;
 
-public class BuildAssetBundles
+namespace Editor
 {
-  [MenuItem("Assets/Build AssetBundles")]
-  public static void BuildAllAssetBundles()
+  public static class BuildAssetBundles
   {
-    string path = "AssetBundles";
-    if (!Directory.Exists(path))
-      Directory.CreateDirectory(path);
+    [MenuItem("Assets/Build AssetBundles")]
+    public static void BuildAllAssetBundles()
+    {
+      string path = "AssetBundles";
+      if (!Directory.Exists(path))
+        Directory.CreateDirectory(path);
 
-    BuildPipeline.BuildAssetBundles(
+      BuildPipeline.BuildAssetBundles(
         path,
         BuildAssetBundleOptions.None,
         EditorUserBuildSettings.activeBuildTarget
-    );
+      );
+    }
   }
 }

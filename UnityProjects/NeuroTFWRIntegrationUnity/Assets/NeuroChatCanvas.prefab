@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 6264189282784098616}
   - component: {fileID: 7325305143824699835}
   - component: {fileID: 4159695495696459125}
-  - component: {fileID: 756225494092063081}
   m_Layer: 5
   m_Name: WindowGrid
   m_TagString: Untagged
@@ -36,8 +35,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 199.99939, y: -107.625}
-  m_SizeDelta: {x: 400, y: 207.75}
+  m_AnchoredPosition: {x: 200, y: -114.5}
+  m_SizeDelta: {x: 395, y: 177}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6264189282784098616
 CanvasRenderer:
@@ -97,23 +96,10 @@ MonoBehaviour:
   m_ChildAlignment: 1
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 90, y: 90}
-  m_Spacing: {x: -9.75, y: -34.5}
+  m_CellSize: {x: 90, y: 50}
+  m_Spacing: {x: 0, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 2
---- !u!114 &756225494092063081
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 27810706755106015}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fafe2cfe61f6974895a912c3755e8f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_AllowSwitchOff: 0
 --- !u!1 &976083910093073753
 GameObject:
   m_ObjectHideFlags: 0
@@ -148,8 +134,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 199.5, y: -38}
-  m_SizeDelta: {x: 153, y: 50}
+  m_AnchoredPosition: {x: 199.5, y: -30.5}
+  m_SizeDelta: {x: 153, y: 39.75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4015792657205640494
 CanvasRenderer:
@@ -1104,8 +1090,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 550.5, y: 351}
-  m_SizeDelta: {x: 1101, y: 702}
+  m_AnchoredPosition: {x: 550.5, y: 250}
+  m_SizeDelta: {x: 1101, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &7656238736378797693
 MonoBehaviour:
@@ -1351,7 +1337,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 4
+  m_PixelsPerUnitMultiplier: 8
 --- !u!1 &5515217516017020795
 GameObject:
   m_ObjectHideFlags: 0
@@ -1806,7 +1792,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 331.5}
+  m_AnchoredPosition: {x: 0, y: 331}
   m_SizeDelta: {x: 400, y: 535}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4264822096305228547
@@ -1830,14 +1816,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.6117647, b: 0.7607843, a: 1}
+  m_Color: {r: 1, g: 0.58431375, b: 0.7411765, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1846,7 +1832,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_PixelsPerUnitMultiplier: 8
 --- !u!225 &2967367684701622387
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1909,7 +1895,7 @@ GameObject:
   - component: {fileID: 3528741068788866067}
   - component: {fileID: 399385521977501564}
   m_Layer: 5
-  m_Name: SelectWindowsErrorText
+  m_Name: WindowsErrorText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1931,8 +1917,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.5, y: -63}
-  m_SizeDelta: {x: 362, y: 88.5}
+  m_AnchoredPosition: {x: 0.24951172, y: -63}
+  m_SizeDelta: {x: 395.5, y: 88.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3528741068788866067
 CanvasRenderer:
@@ -1962,7 +1948,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: It seems there are no valid Windows :(
+  m_text: 'Test text for the windows error thing '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1989,10 +1975,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 39
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
