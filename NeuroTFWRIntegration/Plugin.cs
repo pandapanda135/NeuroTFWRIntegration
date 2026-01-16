@@ -22,13 +22,7 @@ namespace NeuroTFWRIntegration;
 public class Plugin : BaseUnityPlugin
 {
 	public static Plugin? Instance { get; private set; }
-
-	private static ConfigEntry<string>? _websocketUrl;
 	
-	public static ConfigEntry<ResearchMenuActions>? ResearchMenuActions;
-
-	public static ConfigEntry<bool>? Debug;
-
 	#region UIAssets
 
 	public static GameObject? ToastContainer;
@@ -39,18 +33,14 @@ public class Plugin : BaseUnityPlugin
 	public Plugin()
 	{
 		Instance = this;
-		
-		_websocketUrl = ConfigStrings.WebsocketUrl.BaseToEntry();
-		ResearchMenuActions = ConfigStrings.ResearchMenuActions.BaseToEntry();
-		Debug = ConfigStrings.Debug.BaseToEntry();
 	}
 
 	private void Awake()
 	{
 		SetLogger(Logger);
-		if (_websocketUrl?.Value != "")
+		if (ConfigHandler.WebsocketUrl.Entry?.Value != "")
 		{
-			Environment.SetEnvironmentVariable("NEURO_SDK_WS_URL", _websocketUrl?.Value);
+			Environment.SetEnvironmentVariable("NEURO_SDK_WS_URL", ConfigHandler.WebsocketUrl.Entry?.Value);
 		}
 		
 		NeuroSdk.NeuroSdkSetup.Initialize("The Farmer Was Replaced");
@@ -61,13 +51,12 @@ public class Plugin : BaseUnityPlugin
 		Context.Send($"{Strings.StartGameContext}");
 		RegisterMainActions.PopulateActionLists();
 		LoadComponents.LoadStartingComponents();
-		// CreateTest();
 	}
 
 	private int _waitNext;
 	private void Update()
 	{
-		if (Debug is null || !Debug.Value) return;
+		if (ConfigHandler.Debug.Entry is null || !ConfigHandler.Debug.Entry.Value) return;
 		if (_waitNext > 100)
 		{
 			_waitNext = 0;
