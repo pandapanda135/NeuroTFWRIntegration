@@ -58,14 +58,14 @@ public static class RegisterPatches
 		Utilities.Logger.Info($"docs: {string.Join("\n",WorkspaceState.Sim.researchMenu.allBoxes.Select(box => box.Value.unlockSO.docs))}");
 		
 		// everything here is either handled by the action or not needed by it
-		if (Plugin.ResearchMenuActions?.Value == ResearchMenuActions.OutOfMenu)
+		if (ConfigHandler.ResearchMenuActions.Entry.Value == ResearchMenuActions.OutOfMenu)
 		{
 			yield break;
 		}
 		
 		// unlockable or upgradeable
 		string getBoxesText = ResearchActions.GetBoxesText();
-		if (Plugin.ResearchMenuActions is not null && Plugin.ResearchMenuActions.Value == ResearchMenuActions.None)
+		if (ConfigHandler.ResearchMenuActions.Entry.Value == ResearchMenuActions.None)
 		{
 			Context.Send($"# Available Upgrades\n{getBoxesText}");
 			yield break;

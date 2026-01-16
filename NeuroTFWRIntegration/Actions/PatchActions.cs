@@ -18,7 +18,7 @@ public static class PatchActions
 	{
 		public override string Name => "write_patch";
 		protected override string Description => "Write a patch to modify the code in this code window. The format is" +
-		                                         $"{(Plugin.Debug is not null && Plugin.Debug.Value
+		                                         $"{(ConfigHandler.Debug.Entry.Value
 			                                         ? "Debug is enabled so the format is not being sent." : PatchStrings.SearchParser)}";
 		protected override JsonSchema Schema => new()
 		{

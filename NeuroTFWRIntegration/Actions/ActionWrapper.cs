@@ -63,6 +63,8 @@ public abstract class BaseNeuroActionWrapper : INeuroAction
 
 	protected virtual void AddToast(ExecutionResult result)
 	{
+		if (ConfigHandler.Toasts.Entry.Value == Toasts.Disabled) return;
+		
 		string text = result.Successful ? string.Format(Strings.SuccessfulToast, Name) : string.Format(Strings.UnsuccessfulToastNoMessage, Name);
 		if (!result.Successful && !string.IsNullOrEmpty(result.Message))
 			text = string.Format(Strings.UnsuccessfulToast, Name, result.Message);

@@ -36,7 +36,7 @@ public class ContextPatches
 	[HarmonyPostfix]
 	public static void PostUnlockBox(UnlockBox __instance)
 	{
-		if (Plugin.ResearchMenuActions?.Value != ResearchMenuActions.None) return;
+		if (ConfigHandler.ResearchMenuActions.Entry.Value != ResearchMenuActions.None) return;
 
 		// this will happen if the item is maxed 
 		if (WorkspaceState.Farm.GetUnlockCost(__instance.unlockSO) == null ||

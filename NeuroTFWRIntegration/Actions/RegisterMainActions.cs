@@ -67,15 +67,20 @@ public static class RegisterMainActions
 		AllActions.AddRange([
 			typeof(PatchActions.GetWindowCode), typeof(PatchActions.WritePatch), typeof(CodeWindowActions.CreateWindow),
 			typeof(QueryActions.QueryItems), typeof(DocsActions.GetDocumentation), typeof(QueryActions.QueryDrone),
-			typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin), typeof(ToastActions.CreateToast)
+			typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)
 		]);
 		
 		NoWindowsActions.AddRange([typeof(CodeWindowActions.CreateWindow), typeof(QueryActions.QueryItems),
 			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin),
-			typeof(ToastActions.CreateToast)
 		]);
 
-		if (Plugin.ResearchMenuActions?.Value != ResearchMenuActions.OutOfMenu) return;
+		if (ConfigHandler.Toasts.Entry.Value == Toasts.All)
+		{
+			AllActions.Add(typeof(ToastActions.CreateToast));
+			NoWindowsActions.Add(typeof(ToastActions.CreateToast));
+		}
+
+		if (ConfigHandler.ResearchMenuActions.Entry.Value != ResearchMenuActions.OutOfMenu) return;
 		
 		AllActions.AddRange([typeof(ResearchActions.QueryUpgrades), typeof(ResearchActions.BuyUpgrade)]);
 		NoWindowsActions.AddRange([typeof(ResearchActions.QueryUpgrades), typeof(ResearchActions.BuyUpgrade)]);

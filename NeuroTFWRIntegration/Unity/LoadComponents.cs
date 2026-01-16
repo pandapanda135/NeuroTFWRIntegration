@@ -15,8 +15,15 @@ public static class LoadComponents
 
 	public static void LoadStartingComponents()
 	{
-		AddToastsContainer();
-		AddChat();
+		if (ConfigHandler.Toasts.Entry.Value != Toasts.Disabled)
+		{
+			AddToastsContainer();
+		}
+		if (ConfigHandler.NeuroChat.Entry.Value)
+		{
+			Utilities.Logger.Warning($"neuro chat value: {ConfigHandler.NeuroChat.Entry.Value}");
+			AddChat();
+		}
 	}
 	
 	private static void AddToastsContainer()

@@ -68,7 +68,7 @@ public static class ResearchActions
 
 		private static IEnumerator ExecuteRoutine(string parsedData)
 		{
-			if (Plugin.ResearchMenuActions?.Value == ResearchMenuActions.OutOfMenu)
+			if (ConfigHandler.ResearchMenuActions.Entry.Value == ResearchMenuActions.OutOfMenu)
 			{
 				if (!WorkspaceState.ResearchMenuOpen)
 					WorkspaceState.Sim.researchMenu.OpenCloseMenu();
