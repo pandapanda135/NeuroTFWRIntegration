@@ -19,6 +19,7 @@ public static class LoadComponents
 		{
 			AddToastsContainer();
 		}
+		
 		if (ConfigHandler.NeuroChat.Entry.Value)
 		{
 			Utilities.Logger.Warning($"neuro chat value: {ConfigHandler.NeuroChat.Entry.Value}");

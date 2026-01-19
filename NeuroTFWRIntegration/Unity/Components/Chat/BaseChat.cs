@@ -65,7 +65,7 @@ public class BaseChat : MonoBehaviour
 	// we use FixedUpdate as it should load to less lag than Update due to it being based on ticks not framerate
 	private void FixedUpdate()
 	{
-		// I think the performance cost of this shouldn't be that bad, and it's quite clean.
+		// I think the performance cost of this shouldn't be that bad, and it's relatively clean.
 		MainGroup?.alpha = WorkspaceState.MenuOpen ? 0 : 1;
 		MainGroup?.interactable = !WorkspaceState.MenuOpen;
 	}

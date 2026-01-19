@@ -44,7 +44,7 @@ public class ResourceContext
 		return (from hat in ResourceManager.GetAllHats() where WorkspaceState.Sim.IsUnlocked(hat.hatName) && !hat.hidden select hat.ToString()).ToList();
 	}
 
-	// TODO: find way to get function's arguments and their types
+	// TODO: find way to get function's arguments and their types, I spent some time trying this and I don't think there is a way to do this without just hardcoding everything :(. 
 	public static List<string> GetFunctionStrings()
 	{
 		return (from kvp in BuiltinFunctions.Functions where WorkspaceState.Sim.IsUnlocked(kvp.Key) select kvp.Value.functionName).ToList();
