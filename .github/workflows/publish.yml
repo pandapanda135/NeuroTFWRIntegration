@@ -14,13 +14,58 @@ permissions:
   contents: write
 
 jobs:
+  run-editor-script:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v3
+        with:
+          path: UnityProjects/NeuroTFWRIntegrationUnity/Library
+          key: UnityProjects/NeuroTFWRIntegrationUnity/Library-${{ hashFiles('Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            UnityProjects/NeuroTFWRIntegrationUnity/Library-
+
+      - uses: game-ci/unity-builder@v4
+        # this doesn't work locally
+        if: ${{ github.actor != 'nektos/act' }}
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          allowDirtyBuild: true
+
+          projectPath: UnityProjects/NeuroTFWRIntegrationUnity
+          buildPath: 'build/StandaloneWindows64'
+          buildName: 'StandaloneWindows64'
+          targetPlatform: StandaloneWindows64
+          unityVersion: '6000.0.43f1'
+          buildMethod: Editor.BuildAssetBundles.BuildAllAssetBundles
+
+      - name: Upload asset bundles
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-bundles
+          path: UnityProjects/NeuroTFWRIntegrationUnity/AssetBundles/
+
   build-and-publish:
+    needs: run-editor-script
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download asset bundles
+        uses: actions/download-artifact@v4
+        with:
+          name: asset-bundles
+          path: asset-bundles
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -56,11 +101,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd NeuroTFWRIntegration
-          mkdir NeuroTFWRIntegration
+
+          mkdir -p NeuroTFWRIntegration/AssetBundles
+
           cp out/NeuroTFWRIntegration.dll NeuroTFWRIntegration/
           cp out/Newtonsoft.Json.dll NeuroTFWRIntegration/
           cp out/NeuroSdk.dll NeuroTFWRIntegration/
           cp out/EditParsing.dll NeuroTFWRIntegration/
-          zip -r NeuroTFWRIntegration.zip NeuroTFWRIntegration
 
+          cp -r ../asset-bundles/* NeuroTFWRIntegration/AssetBundles/
+
+          zip -r NeuroTFWRIntegration.zip NeuroTFWRIntegration
           gh release create "$RELEASE_TAG" -F ../release-notes.md NeuroTFWRIntegration.zip
+

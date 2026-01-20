@@ -11,7 +11,7 @@ namespace NeuroTFWRIntegration.Actions;
 
 public static class CodeWindowActions
 {
-	public class CreateWindow : NeuroAction<string>
+	public class CreateWindow : NeuroActionWrapper<string>
 	{
 		public override string Name => "create_window";
 		protected override string Description => "Create a window for you to code in.";
@@ -67,7 +67,7 @@ public static class CodeWindowActions
 	
 	// TODO: we probably don't need this anymore
 	[Obsolete]
-	public class GetWindows : NeuroAction
+	public class GetWindows : NeuroActionWrapper
 	{
 		public override string Name => "get_code_windows";
 		protected override string Description => "";
@@ -92,7 +92,7 @@ public static class CodeWindowActions
 	}
 
 	[Obsolete]
-	public class SelectWindow : NeuroAction<CodeWindow>
+	public class SelectWindow : NeuroActionWrapper<CodeWindow>
 	{
 		public override string Name => "select_window";
 		protected override string Description => "";
@@ -128,7 +128,7 @@ public static class CodeWindowActions
 		}
 	}
 
-	public class ExecuteWindow : NeuroAction<CodeWindow>
+	public class ExecuteWindow : NeuroActionWrapper<CodeWindow>
 	{
 		public override string Name => "execute_window";
 		protected override string Description => "Execute a window";
@@ -159,20 +159,15 @@ public static class CodeWindowActions
 		protected override void Execute(CodeWindow? parsedData)
 		{
 			parsedData?.PressExecuteOrStop();
-			var window = ActionWindow.Create(WorkspaceState.Object);
-			// window.AddAction(new GetWindows()).AddAction(new ExecuteWindow())
-			// 	.AddAction(new SelectWindow());
-			window.Register();
 		}
 	}
 	
 	private static void RegisterSelectedWindow(CodeWindow codeWindow)
 	{
-		var window = ActionWindow.Create(WorkspaceState.Object);
-		window.SetForce(0, $"You are interacting with a window with the name of {codeWindow.fileName}",
-			$"This is the code of this window: {codeWindow.CodeInput.text}", true);
 		// window.AddAction(new WritePatch());
 		// window.AddAction(new ExecuteWindow());
-		window.Register();
+		ActionWindow.Create(WorkspaceState.Object).SetForce(0,
+			$"You are interacting with a window with the name of {codeWindow.fileName}",
+			$"This is the code of this window: {codeWindow.CodeInput.text}", true).Register();
 	}
 }

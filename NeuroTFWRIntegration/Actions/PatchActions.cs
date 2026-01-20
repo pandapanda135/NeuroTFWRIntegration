@@ -14,11 +14,11 @@ namespace NeuroTFWRIntegration.Actions;
 
 public static class PatchActions
 {
-	public class WritePatch : NeuroAction<string>
+	public class WritePatch : NeuroActionWrapper<string>
 	{
 		public override string Name => "write_patch";
 		protected override string Description => "Write a patch to modify the code in this code window. The format is" +
-		                                         $"{(Plugin.Debug is not null && Plugin.Debug.Value
+		                                         $"{(ConfigHandler.Debug.Entry.Value
 			                                         ? "Debug is enabled so the format is not being sent." : PatchStrings.SearchParser)}";
 		protected override JsonSchema Schema => new()
 		{
@@ -74,12 +74,16 @@ public static class PatchActions
 				Utilities.Logger.Error($"What the fuck happened here: {e}");
 				Context.Send($"There was an error when trying to apply the patch you just sent, you should either," +
 				             $" tell the person you are playing with and see if they can help you or try something else.");
+				PostExecuteAction?.Invoke();
 				throw;
 			}
+			
+			PostExecuteAction?.Invoke();
 		}
 	}
 
-	private class GetAllWindowCode : NeuroAction
+	[Obsolete("Removed in favour of window specific fetching.")]
+	private class GetAllWindowCode : NeuroActionWrapper
 	{
 		public override string Name => "get_all_window_code";
 
@@ -110,7 +114,7 @@ public static class PatchActions
 		}
 	}
 
-	public class GetWindowCode : NeuroAction<string>
+	public class GetWindowCode : NeuroActionWrapper<string>
 	{
 		public override string Name => "get_window_code";
 		protected override string Description => "Get the code of specific window";

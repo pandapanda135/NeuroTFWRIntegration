@@ -58,24 +58,22 @@ public static class RegisterPatches
 		Utilities.Logger.Info($"docs: {string.Join("\n",WorkspaceState.Sim.researchMenu.allBoxes.Select(box => box.Value.unlockSO.docs))}");
 		
 		// everything here is either handled by the action or not needed by it
-		if (Plugin.ResearchMenuActions?.Value == ResearchMenuActions.OutOfMenu)
+		if (ConfigHandler.ResearchMenuActions.Entry.Value == ResearchMenuActions.OutOfMenu)
 		{
 			yield break;
 		}
 		
 		// unlockable or upgradeable
 		string getBoxesText = ResearchActions.GetBoxesText();
-		if (Plugin.ResearchMenuActions is not null && Plugin.ResearchMenuActions.Value == ResearchMenuActions.None)
+		if (ConfigHandler.ResearchMenuActions.Entry.Value == ResearchMenuActions.None)
 		{
 			Context.Send($"# Available Upgrades\n{getBoxesText}");
 			yield break;
 		}
 
-		var window = ActionWindow.Create(WorkspaceState.Object);
-		window.AddAction(new ResearchActions.BuyUpgrade());
-		window.SetForce(0, "You are now in the research menu where you can buy upgrades to help you.",
-			$"# Possible Upgrades\n{getBoxesText}", true);
-		window.Register();
+		ActionWindow.Create(WorkspaceState.Object).AddAction(new ResearchActions.BuyUpgrade()).SetForce(0,
+			"You are now in the research menu where you can buy upgrades to help you.",
+			$"# Possible Upgrades\n{getBoxesText}", true).Register();
 	}
 
 	/// <summary>

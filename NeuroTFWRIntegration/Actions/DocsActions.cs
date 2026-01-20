@@ -9,7 +9,7 @@ namespace NeuroTFWRIntegration.Actions;
 
 public static class DocsActions
 {
-	public class GetDocumentation : NeuroAction<string>
+	public class GetDocumentation : NeuroActionWrapper<string>
 	{
 		public override string Name => "get_documentation";
 		protected override string Description => "Get the contents of a documentation file.";

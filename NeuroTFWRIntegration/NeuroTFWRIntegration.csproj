@@ -16,7 +16,7 @@
         <RootNamespace>NeuroTFWRIntegration</RootNamespace>
         <HasUnityReference>true</HasUnityReference>
 
-        <GamePath>/mnt/chonk/SteamLibrary/steamapps/common/The Farmer Was Replaced</GamePath>
+        <GamePath></GamePath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -52,6 +52,7 @@
     <Target Name="CopyPluginAfterBuild" AfterTargets="Build"  Condition="$(GITHUB_ACTIONS) != true">
         <ItemGroup>
             <DllFiles Include="$(OutputPath)*.dll"/>
+            <AssetBundles Include="../UnityProjects/NeuroTFWRIntegrationUnity/AssetBundles/*" />
         </ItemGroup>
         
         <Copy
@@ -59,5 +60,11 @@
                 DestinationFolder="$(BepinExPath)$(TargetName)"
                 OverwriteReadOnlyFiles="true"/>
         <Message Text="Finished copying all plugin files." Importance="high"/>
+
+        <Copy
+                SourceFiles="@(AssetBundles)"
+                DestinationFolder="$(BepinExPath)$(TargetName)/AssetBundles"
+                OverwriteReadOnlyFiles="true"/>
+        <Message Text="Finished copying all AssetBundles." Importance="high"/>
     </Target>
 </Project>

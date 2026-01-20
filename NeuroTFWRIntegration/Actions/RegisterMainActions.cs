@@ -23,8 +23,6 @@ public static class RegisterMainActions
 			return;
 		}
 		
-		// for some reason documentation requires closing and opening a menu after pressing play to populate schema,
-		// IDK why IDK how to fix it, and I've spent way too much time trying to get it to work already
 		var actions = CreateActionClasses(AllActions);
 
 		NeuroActionHandler.RegisterActions(actions);
@@ -73,9 +71,16 @@ public static class RegisterMainActions
 		]);
 		
 		NoWindowsActions.AddRange([typeof(CodeWindowActions.CreateWindow), typeof(QueryActions.QueryItems),
-			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin)]);
+			typeof(QueryActions.QueryDrone), typeof(QueryActions.QueryWorld), typeof(QueryActions.QueryBuiltin),
+		]);
 
-		if (Plugin.ResearchMenuActions?.Value != ResearchMenuActions.OutOfMenu) return;
+		if (ConfigHandler.Toasts.Entry.Value == Toasts.All)
+		{
+			AllActions.Add(typeof(ToastActions.CreateToast));
+			NoWindowsActions.Add(typeof(ToastActions.CreateToast));
+		}
+
+		if (ConfigHandler.ResearchMenuActions.Entry.Value != ResearchMenuActions.OutOfMenu) return;
 		
 		AllActions.AddRange([typeof(ResearchActions.QueryUpgrades), typeof(ResearchActions.BuyUpgrade)]);
 		NoWindowsActions.AddRange([typeof(ResearchActions.QueryUpgrades), typeof(ResearchActions.BuyUpgrade)]);

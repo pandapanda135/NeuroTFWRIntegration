@@ -17,7 +17,7 @@ public class DocWindowHelper
 	{
 		// we use the inventory container as the workspace container doesn't work when in the menu.
 		var window = Object.Instantiate(WorkspaceState.CurrentWorkspace.docWinPrefab, WorkspaceState.Sim.inv.container);
-		// TODO: load doc causes a stutter
+		// TODO: load doc causes a stutter. This can be seen in game when switching from a file to the general docs home. I don't think I can fix this here.
 		window.LoadDoc(path);
 
 		_window = window;
@@ -41,7 +41,7 @@ public class DocWindowHelper
 		return lines;
 	}
 
-	public string GetText()
+	public string GetDocText()
 	{
 		if (_window is null) throw new NullReferenceException();
 		string text = _window.OpenMarkdownText.textFields.Aggregate("", (current, field) => current + field.textComponent.GetParsedText());
@@ -54,7 +54,7 @@ public class DocWindowHelper
 		var window = new DocWindowHelper();
 		window.CreateDocWindow(link);
 
-		string text = window.GetText();
+		string text = window.GetDocText();
 		window.Destroy();
 		return text;
 	}
