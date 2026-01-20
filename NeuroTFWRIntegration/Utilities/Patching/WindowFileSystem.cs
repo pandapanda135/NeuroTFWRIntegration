@@ -6,12 +6,12 @@ public static class WindowFileSystem
 {
 	public static string Open(string path)
 	{
-		return WorkspaceState.CurrentWorkspace.codeWindows.First(kvp => kvp.Value.fileNameText.text == path).Value.CodeInput.text;
+		return WorkspaceState.CodeWindows.First(kvp => kvp.Value.fileNameText.text == path).Value.CodeInput.text;
 	}
 	
 	public static void Write(string path, string content)
 	{
-		var codeWindow = WorkspaceState.CurrentWorkspace.codeWindows.First(kvp => kvp.Value.fileNameText.text == path).Value;
+		var codeWindow = WorkspaceState.CodeWindows.First(kvp => kvp.Value.fileNameText.text == path).Value;
 		
 		// I would use SetText, but I'd have to import more stuff and this works
 		codeWindow.CodeInput.text = content;
@@ -19,6 +19,8 @@ public static class WindowFileSystem
 
 	public static void Delete(string path)
 	{
-		// we can return as we won't use this yet and I don't really know how to implement.
+		var codeWindow = WorkspaceState.CodeWindows.First(kvp => kvp.Value.fileNameText.text == path).Value;
+		// this will make the pop-up appear, could maybe use toasts in the future.
+		codeWindow.PromptDelete();
 	}
 }

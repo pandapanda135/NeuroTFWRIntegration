@@ -50,10 +50,10 @@ public class ContextPatches
 		string unlockInformation = $"# Description\n{Localizer.Localize(__instance.unlockSO.description)}\n# Docs path\n{__instance.unlockSO.docs}";
 		if (__instance.prevNumUnlocked != 0)
 		{
-			Context.Send($"{snakeName} was upgraded to level {__instance.NumUnlocked()}, here is information on it {unlockInformation}.");
+			Context.Send(string.Format(Strings.UpgradeUnlock, snakeName, __instance.NumUnlocked(), unlockInformation));
 			return;
 		}
 		
-		Context.Send($"{snakeName} was unlocked, here is information on it {unlockInformation}.");
+		Context.Send(string.Format(Strings.UnlockUnlock, snakeName, unlockInformation));
 	}
 }

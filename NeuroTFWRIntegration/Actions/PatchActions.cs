@@ -82,38 +82,6 @@ public static class PatchActions
 		}
 	}
 
-	[Obsolete("Removed in favour of window specific fetching.")]
-	private class GetAllWindowCode : NeuroActionWrapper
-	{
-		public override string Name => "get_all_window_code";
-
-		protected override string Description =>
-			"This will provide you with all of the windows' code and allow you to write a patch if you want to.";
-
-		protected override JsonSchema Schema => new();
-		protected override ExecutionResult Validate(ActionJData actionData)
-		{
-			if (!WorkspaceState.CurrentWorkspace.codeWindows.Any())
-				return ExecutionResult.Failure($"There are no windows for you to interact with.");
-
-			return ExecutionResult.Success($"");
-		}
-
-		protected override void Execute()
-		{
-			// var window = ActionWindow.Create(WorkspaceState.WindowObject);
-			// string force = "";
-			// foreach (var kvp in WorkspaceState.CodeWindows)
-			// {
-			// 	force += $"";
-			// }
-			// window.SetForce(0, $"These are all the windows in this workspace that you can interact with.",, true);
-			// window.AddAction(new WritePatch());
-			// // window.AddAction(new ExecuteWindow());
-			// window.Register();
-		}
-	}
-
 	public class GetWindowCode : NeuroActionWrapper<string>
 	{
 		public override string Name => "get_window_code";

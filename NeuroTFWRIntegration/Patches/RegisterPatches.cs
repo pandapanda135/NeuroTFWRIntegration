@@ -4,6 +4,7 @@ using HarmonyLib;
 using NeuroSdk.Actions;
 using NeuroSdk.Messages.Outgoing;
 using NeuroTFWRIntegration.Actions;
+using NeuroTFWRIntegration.ContextHandlers;
 using NeuroTFWRIntegration.Utilities;
 using UnityEngine;
 
@@ -86,7 +87,7 @@ public static class RegisterPatches
 		// we check if menu is active as otherwise when the game is first loaded and the windows are created the actions will be registered in the menu.
 		if (WorkspaceState.MenuOpen) return;
 		
-		Context.Send($"A code window has been created, it is called {__instance.codeWindows[fileName].fileNameText.text}");
+		Context.Send(string.Format(Strings.CodeWindowCreated, __instance.codeWindows[fileName].fileNameText.text));
 		RegisterMainActions.UnregisterMain();
 		RegisterMainActions.RegisterMain();
 	}

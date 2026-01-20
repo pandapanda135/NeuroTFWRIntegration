@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using NeuroSdk.Actions;
 using NeuroSdk.Json;
-using NeuroSdk.Messages.Outgoing;
 using NeuroSdk.Websocket;
 using NeuroTFWRIntegration.Utilities;
 
@@ -63,111 +60,5 @@ public static class CodeWindowActions
 				break;
 			}
 		}
-	}
-	
-	// TODO: we probably don't need this anymore
-	[Obsolete]
-	public class GetWindows : NeuroActionWrapper
-	{
-		public override string Name => "get_code_windows";
-		protected override string Description => "";
-		protected override JsonSchema Schema => new();
-
-		protected override ExecutionResult Validate(ActionJData actionData)
-		{
-			return ExecutionResult.Success();
-		}
-
-		protected override void Execute()
-		{
-			string contextString = $"These are the name's of the windows in this workspace:";
-			foreach (var window in WorkspaceState.CurrentWorkspace.codeWindows)
-			{
-				contextString += $"\n{window.Key}";
-				Utilities.Logger.Info($"windows: {window.Key}   {window.Value.CodeInput.text}");
-			}
-
-			Context.Send(contextString);
-		}
-	}
-
-	[Obsolete]
-	public class SelectWindow : NeuroActionWrapper<CodeWindow>
-	{
-		public override string Name => "select_window";
-		protected override string Description => "";
-
-		protected override JsonSchema Schema => new()
-		{
-			Type = JsonSchemaType.Object,
-			Required = ["window"],
-			Properties = new Dictionary<string, JsonSchema>
-			{
-				["window"] = QJS.Enum(WorkspaceState.CurrentWorkspace.codeWindows
-					.Select(kvp => kvp.Key))
-			}
-		};
-
-		protected override ExecutionResult Validate(ActionJData actionData, out CodeWindow parsedData)
-		{
-			string? name = actionData.Data?.Value<string>("window");
-			parsedData = new();
-			if (name is null) return ExecutionResult.Failure($"You must sent the name of window.");
-
-			if (!WorkspaceState.CurrentWorkspace.codeWindows.ContainsKey(name))
-				return ExecutionResult.Failure($"That is not a valid window");
-			parsedData = WorkspaceState.CurrentWorkspace.codeWindows[name];
-			return ExecutionResult.Success($"");
-		}
-
-		protected override void Execute(CodeWindow? parsedData)
-		{
-			if (parsedData is null) return;
-			parsedData.CodeInput.onSelect.Invoke("0");
-			RegisterSelectedWindow(parsedData);
-		}
-	}
-
-	public class ExecuteWindow : NeuroActionWrapper<CodeWindow>
-	{
-		public override string Name => "execute_window";
-		protected override string Description => "Execute a window";
-
-		protected override JsonSchema Schema => new()
-		{
-			Type = JsonSchemaType.Object,
-			Required = ["window"],
-			Properties = new Dictionary<string, JsonSchema>
-			{
-				["window"] = QJS.Enum(WorkspaceState.CurrentWorkspace.codeWindows
-					.Select(kvp => kvp.Key))
-			}
-		};
-
-		protected override ExecutionResult Validate(ActionJData actionData, out CodeWindow parsedData)
-		{
-			string? name = actionData.Data?.Value<string>("window");
-			parsedData = new();
-			if (name is null) return ExecutionResult.Failure($"You must sent the name of window.");
-
-			if (!WorkspaceState.CurrentWorkspace.codeWindows.ContainsKey(name))
-				return ExecutionResult.Failure($"That is not a valid window");
-			parsedData = WorkspaceState.CurrentWorkspace.codeWindows[name];
-			return ExecutionResult.Success();
-		}
-
-		protected override void Execute(CodeWindow? parsedData)
-		{
-			parsedData?.PressExecuteOrStop();
-		}
-	}
-	
-	private static void RegisterSelectedWindow(CodeWindow codeWindow)
-	{
-		// window.AddAction(new WritePatch());
-		// window.AddAction(new ExecuteWindow());
-		ActionWindow.Create(WorkspaceState.Object).SetForce(0,
-			$"You are interacting with a window with the name of {codeWindow.fileName}",
-			$"This is the code of this window: {codeWindow.CodeInput.text}", true).Register();
 	}
 }

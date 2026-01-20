@@ -14,4 +14,9 @@ public static class Strings
 	public const string SuccessfulToast = "{0} was ran successfully";
 	public const string UnsuccessfulToastNoMessage = "{0} was ran unsuccessfully, no reason was given.";
 	public const string UnsuccessfulToast = "{0} was ran unsuccessfully, the reason was {1}";
+
+	public const string UpgradeUnlock = "{0} was upgraded to level {1}, here is information on it {2}.";
+	public const string UnlockUnlock = "{0} was unlocked, here is information on it {1}.";
+	
+	public const string CodeWindowCreated = "A code window has been created, it is called {0}";
 }

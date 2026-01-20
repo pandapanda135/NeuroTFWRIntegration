@@ -22,7 +22,7 @@ public static class LoadComponents
 		
 		if (ConfigHandler.NeuroChat.Entry.Value)
 		{
-			Utilities.Logger.Warning($"neuro chat value: {ConfigHandler.NeuroChat.Entry.Value}");
+			Utilities.Logger.Info($"neuro chat value: {ConfigHandler.NeuroChat.Entry.Value}");
 			AddChat();
 		}
 	}

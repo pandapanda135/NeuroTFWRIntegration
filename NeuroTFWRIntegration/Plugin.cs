@@ -36,9 +36,9 @@ public class Plugin : BaseUnityPlugin
 	private void Awake()
 	{
 		SetLogger(Logger);
-		if (ConfigHandler.WebsocketUrl.Entry?.Value != "")
+		if (ConfigHandler.WebsocketUrl.Entry.Value != "")
 		{
-			Environment.SetEnvironmentVariable("NEURO_SDK_WS_URL", ConfigHandler.WebsocketUrl.Entry?.Value);
+			Environment.SetEnvironmentVariable("NEURO_SDK_WS_URL", ConfigHandler.WebsocketUrl.Entry.Value);
 		}
 		
 		NeuroSdk.NeuroSdkSetup.Initialize("The Farmer Was Replaced");

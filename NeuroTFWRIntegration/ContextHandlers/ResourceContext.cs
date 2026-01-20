@@ -5,7 +5,7 @@ using NeuroTFWRIntegration.Utilities;
 
 namespace NeuroTFWRIntegration.ContextHandlers;
 
-public class ResourceContext
+public static class ResourceContext
 {
 	public static void SendBuiltinContext()
 	{

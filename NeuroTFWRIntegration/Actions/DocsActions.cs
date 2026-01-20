@@ -24,10 +24,11 @@ public static class DocsActions
 		};
 		protected override ExecutionResult Validate(ActionJData actionData, out string? parsedData)
 		{
-			string? link = actionData.Data?.Value<string>("file");
+			string link = actionData.Data?.Value<string>("file") ?? "";
 
 			parsedData = null;
-			if (string.IsNullOrEmpty(link) || !GetPaths().Contains(link))
+			// we remove all empty or null strings in GetPaths 
+			if (!GetPaths().Contains(link))
 			{
 				return ExecutionResult.Failure($"You did not provide a valid file");
 			}
