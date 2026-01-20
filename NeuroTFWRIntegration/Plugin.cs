@@ -40,15 +40,24 @@ public class Plugin : BaseUnityPlugin
 		{
 			Environment.SetEnvironmentVariable("NEURO_SDK_WS_URL", ConfigHandler.WebsocketUrl.Entry.Value);
 		}
-		
+
 		NeuroSdk.NeuroSdkSetup.Initialize("The Farmer Was Replaced");
 
 		Harmony.CreateAndPatchAll(typeof(RegisterPatches));
 		Harmony.CreateAndPatchAll(typeof(ContextPatches));
+		Harmony.CreateAndPatchAll(typeof(Plugin));
 		
 		Context.Send($"{Strings.StartGameContext}");
 		RegisterMainActions.PopulateActionLists();
 		LoadComponents.LoadStartingComponents();
+	}
+
+	[HarmonyPatch(typeof(ResourceManager), nameof(ResourceManager.LoadAll))]
+	[HarmonyPostfix]
+	public static void LoadPostfix()
+	{
+		Utilities.Logger.Warning($"post load all");
+		CreateResource.CreateNewHat();
 	}
 
 	private int _waitNext;
@@ -66,6 +75,15 @@ public class Plugin : BaseUnityPlugin
 		{
 			_waitNext = -1;
 			return;
+		}
+
+		if (UnityInput.Current.GetKey(KeyCode.U))
+		{
+			_waitNext = 100;
+			foreach (var kvp in ResourceManager.hats)
+			{
+				Utilities.Logger.Info($"hat: {kvp.Key}   {kvp.Value.className}    {kvp.Value.hidden}    {kvp.Value.droneFlyHeight}");
+			}
 		}
 		
 		if (UnityInput.Current.GetKey(KeyCode.H))
