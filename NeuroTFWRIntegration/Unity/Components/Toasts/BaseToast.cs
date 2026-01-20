@@ -1,5 +1,5 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +9,7 @@ namespace NeuroTFWRIntegration.Unity.Components.Toasts;
 public abstract class BaseToast : MonoBehaviour
 {
 	private CanvasGroup? _canvasGroup;
+	protected bool Initialized;
 	
 	protected void AwakeCore(string closeButtonPath = "")
 	{
@@ -25,16 +26,22 @@ public abstract class BaseToast : MonoBehaviour
 
 	protected void InitCore()
 	{
-		return;
+		Initialized = true;
 	}
 	
 	public virtual void CloseClicked()
 	{
 		Utilities.Logger.Info($"pressed on close clicked");
-		Plugin.Instance?.StartCoroutine(Fade(0, 0));
+		Fade(0d, 0);
 	}
 	
-	public IEnumerator Fade(float waitTime, float fadeOutDuration)
+	// I know this is ugly but it works
+	public void Fade(double waitTime, double fadeOutDuration)
+	{
+		StartCoroutine(Fade((float)waitTime, (float)fadeOutDuration));
+	}
+	
+	private IEnumerator Fade(float waitTime, float fadeOutDuration)
 	{
 		if (_canvasGroup is null) yield break;
 		float currentWaitTime = 0f;
@@ -44,6 +51,7 @@ public abstract class BaseToast : MonoBehaviour
 			currentWaitTime += Time.deltaTime;
 			yield return null;
 		}
+		// Utilities.Logger.Info($"post wait");
 		float startAlpha = _canvasGroup.alpha;
 		float t = 0f;
 
@@ -67,5 +75,10 @@ public abstract class BaseToast : MonoBehaviour
 		}
 		var textGui = descriptionTransform.GetComponent<TextMeshProUGUI>();
 		textGui.text = text;
+	}
+
+	private void OnDestroy()
+	{
+		StopAllCoroutines();
 	}
 }

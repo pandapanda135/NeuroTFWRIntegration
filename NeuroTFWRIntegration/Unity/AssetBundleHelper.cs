@@ -39,11 +39,7 @@ public static class AssetBundleHelper
 
 	public static GameObject? LoadBundle(string path, string name)
 	{
-		if (!LoadedBundles.TryGetValue(path, out var bundle))
-		{
-			return null;
-		}
-		return bundle.LoadAsset<GameObject>(name);
+		return LoadedBundles.TryGetValue(path, out var bundle) ? bundle.LoadAsset<GameObject>(name) : null;
 	}
 
 	public static void UnloadBundle(string path, bool unloadAllLoadedObjects = false)

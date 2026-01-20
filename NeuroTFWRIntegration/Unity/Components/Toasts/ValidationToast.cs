@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using Image = UnityEngine.UI.Image;
 
@@ -13,17 +14,28 @@ public class ValidationToast : BaseToast
 		Failure,
 		Standard
 	}
+
+	private CanvasGroup? _successImage;
+	private CanvasGroup? _warningImage;
+	private CanvasGroup? _errorImage;
+
+	private static readonly string ValidationContainer = "ContentsContainer/ValidationImageContainer/{0}";
 	private void Awake()
 	{
 		AwakeCore("ContentsContainer/CloseButton");
-		Plugin.Instance?.StartCoroutine(Fade(5f, 1f));
-		Utilities.Logger.Info($"validation awake");
+		Fade(5f, 1f);
+		
+		_successImage = transform.Find(string.Format(ValidationContainer, "SuccessValidationImage")).GetComponent<CanvasGroup>();
+		_warningImage = transform.Find(string.Format(ValidationContainer, "WarningValidationImage")).GetComponent<CanvasGroup>();
+		_errorImage = transform.Find(string.Format(ValidationContainer, "ErrorValidationImage")).GetComponent<CanvasGroup>();
 	}
 	
 	public void Init(string descriptionText, ValidationLevels level, Color? flavourColour = null)
 	{
-		SetText("ContentsContainer/DescriptionText", descriptionText);
+		InitCore();
+		
 		SetValidationImage(level);
+		SetText("ContentsContainer/DescriptionText", descriptionText);
 		if (flavourColour is not null)
 		{
 			SetFlavourColor(flavourColour.Value);
@@ -33,11 +45,12 @@ public class ValidationToast : BaseToast
 			SetValidationColour(level);
 		}
 
-		InitCore();
 	}
 
 	private void SetValidationColour(ValidationLevels level)
 	{
+		if (!Initialized) return;
+		
 		switch (level)
 		{
 			case ValidationLevels.Success:
@@ -58,25 +71,51 @@ public class ValidationToast : BaseToast
 	}
 	
 	// this may or may not end up getting used.
-	private void SetValidationImage(ValidationLevels validation)
+	private void SetValidationImage(ValidationLevels level)
 	{
-		var find = transform.Find("ContentsContainer/WarningValidationImage");
-		if (find is null)
+		if (!Initialized) return;
+		
+		DisableAllImages();
+		
+		switch (level)
 		{
-			Utilities.Logger.Error($"issue finding valdation image as it was null");
-			return;
+			case ValidationLevels.Success:
+				SetImage(_successImage, true);
+				break;
+			case ValidationLevels.Warning:
+				SetImage(_warningImage, true);
+				break;
+			case ValidationLevels.Failure:
+				SetImage(_errorImage, true);
+				break;
+			case ValidationLevels.Standard:
+				break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(level), level, null);
 		}
-		var img = find.GetComponent<Image>();
-		if (img is null)
-		{
-			Utilities.Logger.Error($"Issue setting left image as it was null");
-			return;
-		}
-		img.sprite = new();
 	}
+	
+	private void DisableAllImages()
+	{
+		SetImage(_successImage, false);
+		SetImage(_warningImage, false);
+		SetImage(_errorImage, false);
+	}
+
+	private static void SetImage(CanvasGroup? cg, bool enable)
+	{
+		if (!cg) return;
+
+		cg.alpha = enable ? 1f : 0f;
+		cg.interactable = enable;
+		cg.blocksRaycasts = enable;
+	}
+
 
 	private void SetFlavourColor(Color color)
 	{
+		if (!Initialized) return;
+		
 		var flavour = transform.Find("FlavourColour");
 		flavour.GetComponent<Image>().color = color;
 	}
