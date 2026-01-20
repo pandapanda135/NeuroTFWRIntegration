@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using BepInEx;
-using BepInEx.Configuration;
 using HarmonyLib;
 using NeuroSdk.Messages.Outgoing;
 using NeuroTFWRIntegration.Actions;
 using NeuroTFWRIntegration.ContextHandlers;
 using NeuroTFWRIntegration.Patches;
 using NeuroTFWRIntegration.Unity;
-using NeuroTFWRIntegration.Unity.Components.Chat;
 using NeuroTFWRIntegration.Unity.Components.Toasts;
 using NeuroTFWRIntegration.Utilities;
 using TMPro;
@@ -56,20 +54,23 @@ public class Plugin : BaseUnityPlugin
 	private int _waitNext;
 	private void Update()
 	{
-		if (ConfigHandler.Debug.Entry is null || !ConfigHandler.Debug.Entry.Value) return;
-		if (_waitNext > 100)
-		{
-			_waitNext = 0;
-		}
+		if (!ConfigHandler.Debug.Entry.Value) return;
 
-		if (_waitNext != 0)
+		if (_waitNext > 0)
 		{
-			_waitNext++;
+			_waitNext--;
 			return;
 		}
-
+		
+		if (_waitNext == 0)
+		{
+			_waitNext = -1;
+			return;
+		}
+		
 		if (UnityInput.Current.GetKey(KeyCode.H))
 		{
+			_waitNext = 100;
 			var toastPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "validation-toast");
 
 			AssetBundleHelper.GetAssetBundle(toastPath);
@@ -98,7 +99,7 @@ public class Plugin : BaseUnityPlugin
 
 		if (UnityInput.Current.GetKey(KeyCode.Z))
 		{
-			_waitNext = 1;
+			_waitNext = 100;
 			
 			var window = Instantiate(WorkspaceState.CurrentWorkspace.docWinPrefab, WorkspaceState.Sim.inv.container);
 			Logger.LogInfo($"container: {window.container}");
