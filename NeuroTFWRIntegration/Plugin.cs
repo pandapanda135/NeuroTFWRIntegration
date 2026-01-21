@@ -60,6 +60,39 @@ public class Plugin : BaseUnityPlugin
 		CreateResource.CreateNewHat();
 	}
 
+	[HarmonyPatch(typeof(Drone), nameof(Drone.ChangeHat))]
+	[HarmonyPrefix]
+	public static void HideDroneOnHatChange(Drone __instance, HatSO hatSO)
+	{
+		if (!hatSO.hidden && !WorkspaceState.Farm.IsUnlocked(hatSO.hatName))
+		{
+			return;
+		}
+		
+		// this should already be loaded
+		if (hatSO != CreateResource.HatSo)
+		{
+			Utilities.Logger.Info($"default drone: {CreateResource.DefaultDroneMesh}");
+			WorkspaceState.FarmRenderer.droneMesh = CreateResource.DefaultDroneMesh;
+			return;
+		}
+		
+		if (CreateResource.SwarmDroneMesh is null)
+		{
+			Utilities.Logger.Error($"hat asset prefab was null.");
+			return;
+		}
+
+		// var leftOffset = WorkspaceState.FarmRenderer.propellerOffset1 - WorkspaceState.FarmRenderer.propellerOffset3;
+		// WorkspaceState.FarmRenderer.propellerOffset1 = leftOffset;
+		// WorkspaceState.FarmRenderer.propellerOffset3 = leftOffset;
+		
+		// var rightOffset = WorkspaceState.FarmRenderer.propellerOffset2 - WorkspaceState.FarmRenderer.propellerOffset4;
+		// WorkspaceState.FarmRenderer.propellerOffset2 = rightOffset;
+		// WorkspaceState.FarmRenderer.propellerOffset4 = rightOffset;
+		WorkspaceState.FarmRenderer.droneMesh = CreateResource.SwarmDroneMesh;
+	}
+	
 	private int _waitNext;
 	private void Update()
 	{
@@ -77,8 +110,21 @@ public class Plugin : BaseUnityPlugin
 			return;
 		}
 
+		if (UnityInput.Current.GetKey(KeyCode.F))
+		{
+			WorkspaceState.FarmRenderer.propellerOffset1.x -= 1;
+			WorkspaceState.FarmRenderer.propellerOffset1.y -= 1;
+		}
+		
+		if (UnityInput.Current.GetKey(KeyCode.G))
+		{
+			WorkspaceState.FarmRenderer.propellerOffset3.x -= 1;
+			WorkspaceState.FarmRenderer.propellerOffset3.y -= 1;
+		}
+
 		if (UnityInput.Current.GetKey(KeyCode.U))
 		{
+			Utilities.Logger.Info($"propeller amount: {GameObject.Find("Farm").GetComponent<FarmRenderer>().propellerMeshes.Count}");
 			_waitNext = 100;
 			foreach (var kvp in ResourceManager.hats)
 			{

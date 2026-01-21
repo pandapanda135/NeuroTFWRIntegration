@@ -17,6 +17,8 @@ public static class WorkspaceState
 
 	public static Farm Farm => Sim.sim.farm;
 
+	public static FarmRenderer FarmRenderer => GameObject.Find("Farm").GetComponent<FarmRenderer>();
+
 	public static List<KeyValuePair<string, UnlockBox>> ValidBoxes => Sim.researchMenu.allBoxes.Where(kvp =>
 		kvp.Value.unlockState is UnlockBox.UnlockState.Unlockable or UnlockBox.UnlockState.Upgradable).ToList();
 	public static List<KeyValuePair<string, UnlockBox>> UnlockableBoxes => ValidBoxes.Where(kvp => CanUnlock(kvp.Value.unlockSO)).ToList();

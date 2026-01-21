@@ -8,15 +8,18 @@ namespace NeuroTFWRIntegration.Utilities;
 
 public static class CreateResource
 {
-	public static void CreateNewHat()
+	public static Mesh? DefaultDroneMesh;
+	public static Mesh? DefaultPropellerMesh;
+
+	public static HatSO? HatSo;
+
+	public static Mesh? SwarmDroneMesh;
+	public static Material? SwarmDroneMaterial;
+
+	public static void CreateSwarmHat()
 	{
-		var path = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "gym-bag");
-		AssetBundleHelper.GetAssetBundle(path);
-		var asset = AssetBundleHelper.LoadBundle(path,"Assets/Models/Gym_bag_test.fbx");
-		if (asset is null)
-		{
-			Logger.Error($"hat asset prefab was null.");
-		}
+		if (HatSo is not null) return;
+
 		var hatSo = ScriptableObject.CreateInstance<HatSO>();
 		hatSo.hatName = "swarm";
 		hatSo.className = "Hat";
@@ -25,21 +28,46 @@ public static class CreateResource
 		hatSo.isGolden = false;
 		hatSo.preventWrapping = false;
 		hatSo.rotateDroneToMove = false;
-		// ResourceManager.GetAllHats().ToArray()[0].hatMesh
-		Mesh? original = asset?.GetComponent<MeshFilter>().mesh;
-		if (original is null)
+
+		HatSo = hatSo;
+	}
+	
+	public static readonly string GymBagPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "gym-bag");
+	public static void CreateNewHat()
+	{
+		if (HatSo is null)
+		{
+			CreateSwarmHat();
+		}
+		DefaultDroneMesh = WorkspaceState.FarmRenderer.droneMesh;
+		DefaultPropellerMesh = WorkspaceState.FarmRenderer.propellerMesh;
+		
+		AssetBundleHelper.GetAssetBundle(GymBagPath);
+		var asset = AssetBundleHelper.LoadBundle(GymBagPath,"Assets/Models/Gym_bag_test.fbx");
+		if (asset is null)
+		{
+			Logger.Error($"hat asset prefab was null.");
+		}
+		
+		// TODO: hide drone when enabled.
+		// After looking into this, we could just modify the drone and propeller mesh when SwarmDrone is selected. (maybe in constructor?) 
+		
+		// This is for testing without added mesh. ResourceManager.GetAllHats().ToArray()[0].hatMesh
+		SwarmDroneMesh = asset?.GetComponent<MeshFilter>().mesh;
+		if (SwarmDroneMesh is null)
 		{
 			Logger.Error($"error getting hat mesh.");
 			return;
 		}
 		
 		// We don't modify mesh data as we either do that in Unity import or Blender by changing the origin of the objects and combining them.
-		// New idea is to hide the drone mesh and only show the hat and have it positioned to where it looks like the drone. The main issue here would be animating the blades on the drones.
-		hatSo.hatMesh = original;
-		hatSo.sound1 = ResourceManager.GetAllHats().ToArray()[0].sound1;
-		hatSo.sound2 = ResourceManager.GetAllHats().ToArray()[0].sound2;
+		HatSo?.hatMesh = SwarmDroneMesh;
+		HatSo?.sound1 = ResourceManager.GetAllHats().ToArray()[0].sound1;
+		HatSo?.sound2 = ResourceManager.GetAllHats().ToArray()[0].sound2;
 		
-		ResourceManager.hats.TryAdd("swarm_hat", hatSo);
-		MainSim.Inst.UnlockHat(hatSo);
+		ResourceManager.hats.TryAdd("swarm_hat", HatSo);
+		MainSim.Inst.UnlockHat(HatSo);
+		GameObject.Find("Farm").GetComponent<FarmRenderer>().droneMesh = SwarmDroneMesh;
+		// GameObject.Find("Farm").GetComponent<FarmRenderer>().propellerMesh
 	}
 }
