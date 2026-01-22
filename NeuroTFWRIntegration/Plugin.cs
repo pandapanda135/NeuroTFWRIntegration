@@ -8,6 +8,7 @@ using NeuroTFWRIntegration.Actions;
 using NeuroTFWRIntegration.ContextHandlers;
 using NeuroTFWRIntegration.Patches;
 using NeuroTFWRIntegration.Unity;
+using NeuroTFWRIntegration.Unity.Components.SwarmDrone;
 using NeuroTFWRIntegration.Unity.Components.Toasts;
 using NeuroTFWRIntegration.Utilities;
 using TMPro;
@@ -45,54 +46,12 @@ public class Plugin : BaseUnityPlugin
 
 		Harmony.CreateAndPatchAll(typeof(RegisterPatches));
 		Harmony.CreateAndPatchAll(typeof(ContextPatches));
-		Harmony.CreateAndPatchAll(typeof(Plugin));
+		Harmony.CreateAndPatchAll(typeof(CreateDrone));
 		
 		Context.Send($"{Strings.StartGameContext}");
 		RegisterMainActions.PopulateActionLists();
 		LoadComponents.LoadStartingComponents();
 	}
-
-	[HarmonyPatch(typeof(ResourceManager), nameof(ResourceManager.LoadAll))]
-	[HarmonyPostfix]
-	public static void LoadPostfix()
-	{
-		Utilities.Logger.Warning($"post load all");
-		CreateResource.CreateNewHat();
-	}
-
-	[HarmonyPatch(typeof(Drone), nameof(Drone.ChangeHat))]
-	[HarmonyPrefix]
-	public static void HideDroneOnHatChange(Drone __instance, HatSO hatSO)
-	{
-		if (!hatSO.hidden && !WorkspaceState.Farm.IsUnlocked(hatSO.hatName))
-		{
-			return;
-		}
-		
-		// this should already be loaded
-		if (hatSO != CreateResource.HatSo)
-		{
-			Utilities.Logger.Info($"default drone: {CreateResource.DefaultDroneMesh}");
-			WorkspaceState.FarmRenderer.droneMesh = CreateResource.DefaultDroneMesh;
-			return;
-		}
-		
-		if (CreateResource.SwarmDroneMesh is null)
-		{
-			Utilities.Logger.Error($"hat asset prefab was null.");
-			return;
-		}
-
-		// var leftOffset = WorkspaceState.FarmRenderer.propellerOffset1 - WorkspaceState.FarmRenderer.propellerOffset3;
-		// WorkspaceState.FarmRenderer.propellerOffset1 = leftOffset;
-		// WorkspaceState.FarmRenderer.propellerOffset3 = leftOffset;
-		
-		// var rightOffset = WorkspaceState.FarmRenderer.propellerOffset2 - WorkspaceState.FarmRenderer.propellerOffset4;
-		// WorkspaceState.FarmRenderer.propellerOffset2 = rightOffset;
-		// WorkspaceState.FarmRenderer.propellerOffset4 = rightOffset;
-		WorkspaceState.FarmRenderer.droneMesh = CreateResource.SwarmDroneMesh;
-	}
-	
 	private int _waitNext;
 	private void Update()
 	{
@@ -108,18 +67,6 @@ public class Plugin : BaseUnityPlugin
 		{
 			_waitNext = -1;
 			return;
-		}
-
-		if (UnityInput.Current.GetKey(KeyCode.F))
-		{
-			WorkspaceState.FarmRenderer.propellerOffset1.x -= 1;
-			WorkspaceState.FarmRenderer.propellerOffset1.y -= 1;
-		}
-		
-		if (UnityInput.Current.GetKey(KeyCode.G))
-		{
-			WorkspaceState.FarmRenderer.propellerOffset3.x -= 1;
-			WorkspaceState.FarmRenderer.propellerOffset3.y -= 1;
 		}
 
 		if (UnityInput.Current.GetKey(KeyCode.U))
