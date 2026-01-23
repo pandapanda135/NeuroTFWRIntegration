@@ -52,6 +52,12 @@ public class Plugin : BaseUnityPlugin
 		RegisterMainActions.PopulateActionLists();
 		LoadComponents.LoadStartingComponents();
 	}
+
+	private void Start()
+	{
+		Harmony.CreateAndPatchAll(typeof(CreateDrone.FarmRendererChangeDroneMaterialPatch));
+	}
+
 	private int _waitNext;
 	private void Update()
 	{

@@ -1,8 +1,13 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using BepInEx;
 using HarmonyLib;
 using NeuroTFWRIntegration.Utilities;
+using TMPro;
 using UnityEngine;
 
 namespace NeuroTFWRIntegration.Unity.Components.SwarmDrone;
@@ -10,6 +15,7 @@ namespace NeuroTFWRIntegration.Unity.Components.SwarmDrone;
 public static class CreateDrone
 {
 	private static Mesh? _defaultDroneMesh;
+	
 	// private static Mesh? _defaultPropellerMesh;
 
 	private static Vector3 _defaultPropellerOffset1;
@@ -20,7 +26,8 @@ public static class CreateDrone
 	private static HatSO? _hatSo;
 
 	private static Mesh? _swarmDroneMesh;
-	// private static Material? SwarmDroneMaterial;
+	private static Material? _defaultDroneMaterial;
+	public static Material? SwarmDroneMaterial;
 
 	private static void CreateSwarmHat()
 	{
@@ -39,6 +46,7 @@ public static class CreateDrone
 	}
 	
 	private static readonly string GymBagPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "gym-bag-drone");
+	private static readonly string MaterialPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "drone-material");
 	private static void SetHatInformation()
 	{
 		if (_hatSo is null)
@@ -46,6 +54,7 @@ public static class CreateDrone
 			CreateSwarmHat();
 		}
 		_defaultDroneMesh = WorkspaceState.FarmRenderer.droneMesh;
+		_defaultDroneMaterial = WorkspaceState.FarmRenderer.material;
 		// _defaultPropellerMesh = WorkspaceState.FarmRenderer.propellerMesh;
 		_defaultPropellerOffset1 = WorkspaceState.FarmRenderer.propellerOffset1;
 		_defaultPropellerOffset2 = WorkspaceState.FarmRenderer.propellerOffset2;
@@ -58,14 +67,24 @@ public static class CreateDrone
 		{
 			Utilities.Logger.Error($"hat asset prefab was null.");
 		}
-		
 		_swarmDroneMesh = asset?.GetComponent<MeshFilter>().mesh;
 		if (_swarmDroneMesh is null)
 		{
 			Utilities.Logger.Error($"error getting hat mesh.");
 			return;
 		}
-		Utilities.Logger.Info($"mesh rotation: {asset?.transform.rotation}");
+		
+		AssetBundleHelper.GetAssetBundle(MaterialPath);
+		Material? mat = AssetBundleHelper.LoadBundle(MaterialPath,"Assets/Models/DroneMaterial.mat", true);
+		if (mat is null)
+		{
+			Utilities.Logger.Error($"error getting drone material.");
+			return;	
+		}
+
+		SwarmDroneMaterial = mat;
+		
+		// Utilities.Logger.Info($"mesh rotation: {mat?.transform.rotation}");
 		
 		_hatSo?.hatMesh = new();
 		_hatSo?.sound1 = ResourceManager.GetAllHats().ToArray()[0].sound1;
@@ -95,17 +114,19 @@ public static class CreateDrone
 		{
 			Utilities.Logger.Info($"default drone: {_defaultDroneMesh}");
 			WorkspaceState.FarmRenderer.droneMesh = _defaultDroneMesh;
+			// WorkspaceState.FarmRenderer.material = _defaultDroneMaterial;
 			ModifyPropellers(true);
 			return;
 		}
 		
-		if (_swarmDroneMesh is null)
+		if (_swarmDroneMesh is null || SwarmDroneMaterial is null)
 		{
 			Utilities.Logger.Error($"hat asset prefab was null.");
 			return;
 		}
 
 		WorkspaceState.FarmRenderer.droneMesh = _swarmDroneMesh;
+		// WorkspaceState.FarmRenderer.material = SwarmDroneMaterial;
 		ModifyPropellers(false);
 	}
 
@@ -141,5 +162,78 @@ public static class CreateDrone
 		WorkspaceState.FarmRenderer.propellerOffset1.x += SwarmXOffset;
 		WorkspaceState.FarmRenderer.propellerOffset1.z += SwarmZOffset;
 		WorkspaceState.FarmRenderer.propellerOffset4 = WorkspaceState.FarmRenderer.propellerOffset1;
+	}
+	
+	[HarmonyPatch(typeof(FarmRenderer), nameof(FarmRenderer.Update))]
+	public static class FarmRendererChangeDroneMaterialPatch
+	{
+		[HarmonyTranspiler]
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			Utilities.Logger.Info($"running update transpiler");
+			var codeInstructions = instructions.ToArray();
+			foreach (var instruction in codeInstructions)
+			{
+				// set to swarm material if in loop and before being instanced
+				if (instruction.opcode == OpCodes.Ldfld)
+				{
+					Utilities.Logger.Info($"opcode was valid");
+					yield return Transpilers.EmitDelegate<Func<Material>>(GetDroneMaterial);
+				}
+				
+				// after drone loop stop the 
+				yield return instruction;
+			}
+			// 		new CodeMatch(OpCodes.Ldc_I4_0),
+			// var codeMatcher = new CodeMatcher(instructions)
+			// 	.MatchForward(false, // false = move at the start of the match, true = move at the end of the match
+			// 		// get this
+			// 		new CodeMatch(OpCodes.Ldarg_0),
+			// 		// get the material from farm renderer
+			// 		new CodeMatch(i => i.opcode == OpCodes.Ldfld))
+			// 	.Advance(1)
+			// 	
+			// 	.InsertAndAdvance(
+			// 		new CodeInstruction(OpCodes.Dup),
+			// 		new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Foo), "Foo"))
+			// 	);
+		}
+
+		[HarmonyPostfix]
+		public static void PostFix()
+		{
+			if (WorkspaceState.FarmRenderer.material != SwarmDroneMaterial)
+				return;
+			
+			Utilities.Logger.Info($"equals swarm drone: {WorkspaceState.FarmRenderer.material == SwarmDroneMaterial}");
+		}
+
+		private static Material GetDroneMaterial()
+		{
+			Utilities.Logger.Info($"drone material start");
+			// if (WorkspaceState.FarmRenderer.material is null) return () => new();
+			try
+			{
+				if (WorkspaceState.Farm.drones.Any(drone => drone.hat.hatSO.hatName == "swarm") &&
+				    SwarmDroneMaterial is not null)
+				{
+					Utilities.Logger.Info($"set material");
+					return SwarmDroneMaterial;
+					WorkspaceState.FarmRenderer.material = SwarmDroneMaterial;
+				}
+				else
+				{
+					return _defaultDroneMaterial;
+					WorkspaceState.FarmRenderer.material = _defaultDroneMaterial;
+				}
+			}
+			catch (Exception e)
+			{
+				Utilities.Logger.Error($"{e}");
+				return _defaultDroneMaterial;
+			}
+			
+			return _defaultDroneMaterial;
+		} 
 	}
 }
