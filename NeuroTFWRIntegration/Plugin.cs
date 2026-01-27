@@ -83,23 +83,30 @@ public class Plugin : BaseUnityPlugin
 		if (UnityInput.Current.GetKey(KeyCode.H))
 		{
 			_waitNext = 100;
-			var toastPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "validation-toast");
+			var toastPath = AssetBundleHelper.GetBundlePath("validation-toast");
 
 			AssetBundleHelper.GetAssetBundle(toastPath);
 			Logger.LogInfo($"creating toast: {toastPath}");
-			var toastAsset = AssetBundleHelper.LoadBundle(toastPath,"Assets/ValidationToast.prefab");
-			if (toastAsset is null)
+			var prefab = AssetBundleHelper.LoadBundle(toastPath,"Assets/ValidationToast.prefab");
+			if (prefab is null)
 			{
 				Utilities.Logger.Error($"toast asset was null");
 				return;
 			}
-			var toast = toastAsset.AddComponent<ValidationToast>();
 
 			for (int i = 0; i < 5; i++)
 			{
+				var inst = Instantiate(prefab);
+				if (inst is null)
+				{
+					Utilities.Logger.Error($"toast instance was null");
+					return;
+				}
+				var toast = inst.AddComponent<ValidationToast>();
+				
 				Utilities.Logger.Info($"i: {i}");
-				toast.Init($"text: {i}", ValidationToast.ValidationLevels.Warning);
-				ToastContainer?.GetComponent<ToastsManager>().AddToast(toastAsset);
+				toast.Init($"text: {i}", ValidationToast.ValidationLevels.Failure);
+				ToastsManager?.AddToast(inst);
 			}
 		}
 		

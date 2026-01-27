@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using Image = UnityEngine.UI.Image;
 
@@ -32,6 +31,11 @@ public class ValidationToast : BaseToast
 	
 	public void Init(string descriptionText, ValidationLevels level, Color? flavourColour = null)
 	{
+		if (Initialized)
+		{
+			Utilities.Logger.Error($"You have already initialized this toast.");
+			return;
+		}
 		InitCore();
 		
 		SetValidationImage(level);

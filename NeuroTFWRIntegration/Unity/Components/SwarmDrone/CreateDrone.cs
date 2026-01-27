@@ -40,9 +40,8 @@ public static class CreateDrone
 		_hatSo = hatSo;
 	}
 	
-	private static readonly string GymBagPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "gym-bag-drone");
-	private static readonly string MaterialPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "drone-material");
-
+	private static readonly string GymBagPath = AssetBundleHelper.GetBundlePath("gym-bag-drone");
+	private static readonly string MaterialPath = AssetBundleHelper.GetBundlePath("drone-material");
 	private static void SetHatInformation()
 	{
 		if (_hatSo is null)

@@ -22,7 +22,7 @@ public class ToastsManager : MonoBehaviour
 		toastPrefab.transform.SetAsLastSibling();
 	}
 
-	private static readonly string ValidationToastPath =  Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "validation-toast");
+	private static readonly string ValidationToastPath =  AssetBundleHelper.GetBundlePath("validation-toast");
 	public static GameObject? CreateValidationToast(string text, ValidationToast.ValidationLevels level, Color? flavourColor = null)
 	{
 		AssetBundleHelper.GetAssetBundle(ValidationToastPath);
@@ -40,7 +40,7 @@ public class ToastsManager : MonoBehaviour
 		return instance;
 	}
 	
-	private static readonly string NeuroToastPath =  Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "neurotoast");
+	private static readonly string NeuroToastPath =  AssetBundleHelper.GetBundlePath("neurotoast");
 	public static GameObject? CreateNeuroToast(string text)
 	{
 		AssetBundleHelper.GetAssetBundle(NeuroToastPath);

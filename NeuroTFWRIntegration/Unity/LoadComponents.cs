@@ -10,8 +10,8 @@ namespace NeuroTFWRIntegration.Unity;
 
 public static class LoadComponents
 {
-	private static readonly string ChatPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "neuro-chat-canvas");
-	private static readonly string ContainerPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "toastcontainer");
+	private static readonly string ChatPath = AssetBundleHelper.GetBundlePath("neuro-chat-canvas");
+	private static readonly string ContainerPath = AssetBundleHelper.GetBundlePath("toastcontainer");
 
 	public static void LoadStartingComponents()
 	{

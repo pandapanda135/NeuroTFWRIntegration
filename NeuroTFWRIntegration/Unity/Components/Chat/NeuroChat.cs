@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using BepInEx;
 using NeuroSdk.Actions;
 using NeuroSdk.Json;
 using NeuroSdk.Websocket;
@@ -18,7 +16,7 @@ namespace NeuroTFWRIntegration.Unity.Components.Chat;
 
 public class NeuroChat : BaseChat
 {
-	private static readonly string ButtonPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "chat-window-button");
+	private static readonly string ButtonPath = AssetBundleHelper.GetBundlePath("chat-window-button");
 
 	private Button? _submitButton;
 	private GameObject? _windowGrid;
