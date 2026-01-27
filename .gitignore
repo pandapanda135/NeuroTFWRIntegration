@@ -24,6 +24,7 @@ ExportedObj/
 **/AssetBundles/
 **/AssetBundles/**
 **/ServerData/
+**/[Aa]ssets/TextMesh Pro
 **/[Aa]ssets/StreamingAssets/aa*
 **/[Aa]ssets/AddressableAssetsData/link.xml*
 **/[Aa]ssets/Addressables_Temp*

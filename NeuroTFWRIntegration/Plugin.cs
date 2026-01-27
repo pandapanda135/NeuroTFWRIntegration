@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using BepInEx;
 using HarmonyLib;
 using NeuroSdk.Messages.Outgoing;
@@ -8,6 +7,7 @@ using NeuroTFWRIntegration.Actions;
 using NeuroTFWRIntegration.ContextHandlers;
 using NeuroTFWRIntegration.Patches;
 using NeuroTFWRIntegration.Unity;
+using NeuroTFWRIntegration.Unity.Components.SwarmDrone;
 using NeuroTFWRIntegration.Unity.Components.Toasts;
 using NeuroTFWRIntegration.Utilities;
 using TMPro;
@@ -40,11 +40,12 @@ public class Plugin : BaseUnityPlugin
 		{
 			Environment.SetEnvironmentVariable("NEURO_SDK_WS_URL", ConfigHandler.WebsocketUrl.Entry.Value);
 		}
-		
+
 		NeuroSdk.NeuroSdkSetup.Initialize("The Farmer Was Replaced");
 
 		Harmony.CreateAndPatchAll(typeof(RegisterPatches));
 		Harmony.CreateAndPatchAll(typeof(ContextPatches));
+		Harmony.CreateAndPatchAll(typeof(CreateDrone));
 		
 		Context.Send($"{Strings.StartGameContext}");
 		RegisterMainActions.PopulateActionLists();
@@ -67,27 +68,44 @@ public class Plugin : BaseUnityPlugin
 			_waitNext = -1;
 			return;
 		}
+
+		if (UnityInput.Current.GetKey(KeyCode.U))
+		{
+			Utilities.Logger.Info($"propeller amount: {GameObject.Find("Farm").GetComponent<FarmRenderer>().propellerMeshes.Count}");
+			_waitNext = 100;
+			foreach (var kvp in ResourceManager.hats)
+			{
+				Utilities.Logger.Info($"hat: {kvp.Key}   {kvp.Value.className}    {kvp.Value.hidden}    {kvp.Value.droneFlyHeight}");
+			}
+		}
 		
 		if (UnityInput.Current.GetKey(KeyCode.H))
 		{
 			_waitNext = 100;
-			var toastPath = Path.Combine(Paths.PluginPath, "NeuroTFWRIntegration", "AssetBundles", "validation-toast");
+			var toastPath = AssetBundleHelper.GetBundlePath("validation-toast");
 
 			AssetBundleHelper.GetAssetBundle(toastPath);
 			Logger.LogInfo($"creating toast: {toastPath}");
-			var toastAsset = AssetBundleHelper.LoadBundle(toastPath,"Assets/ValidationToast.prefab");
-			if (toastAsset is null)
+			var prefab = AssetBundleHelper.LoadBundle(toastPath,"Assets/ValidationToast.prefab");
+			if (prefab is null)
 			{
-				Utilities.Logger.Error($"toast asset was null");
+				Utilities.Logger.Error($"toast prefab was null");
 				return;
 			}
-			var toast = toastAsset.AddComponent<ValidationToast>();
 
 			for (int i = 0; i < 5; i++)
 			{
+				var inst = Instantiate(prefab);
+				if (inst is null)
+				{
+					Utilities.Logger.Error($"toast instance was null");
+					return;
+				}
+				var toast = inst.AddComponent<ValidationToast>();
+				
 				Utilities.Logger.Info($"i: {i}");
-				toast.Init($"text: {i}", ValidationToast.ValidationLevels.Warning);
-				ToastContainer?.GetComponent<ToastsManager>().AddToast(toastAsset);
+				toast.Init($"text: {i}", ValidationToast.ValidationLevels.Failure);
+				ToastsManager?.AddToast(inst);
 			}
 		}
 		
