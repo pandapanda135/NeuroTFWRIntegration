@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using BepInEx;
 using NeuroTFWRIntegration.Unity.Components.Chat;
 using NeuroTFWRIntegration.Unity.Components.Toasts;
 using UnityEngine;

@@ -1,6 +1,4 @@
-using System.IO;
 using System.Linq;
-using BepInEx;
 using HarmonyLib;
 using NeuroTFWRIntegration.Utilities;
 using UnityEngine;
@@ -35,7 +33,8 @@ public static class CreateDrone
 		hatSo.hidden = false;
 		hatSo.isGolden = false;
 		hatSo.preventWrapping = false;
-		hatSo.rotateDroneToMove = false;
+		// I kinda prefer how this looks so we are doing it this way.
+		hatSo.rotateDroneToMove = true;
 
 		_hatSo = hatSo;
 	}
@@ -61,8 +60,9 @@ public static class CreateDrone
 		if (asset is null)
 		{
 			Utilities.Logger.Error($"hat asset prefab was null.");
+			return;
 		}
-		_swarmDroneMesh = asset?.GetComponent<MeshFilter>().mesh;
+		_swarmDroneMesh = asset.GetComponent<MeshFilter>().mesh;
 		if (_swarmDroneMesh is null)
 		{
 			Utilities.Logger.Error($"error getting hat mesh.");
@@ -79,8 +79,6 @@ public static class CreateDrone
 
 		_swarmDroneMaterial = mat;
 		
-		// Utilities.Logger.Info($"mesh rotation: {mat?.transform.rotation}");
-		
 		_hatSo?.hatMesh = new();
 		_hatSo?.sound1 = ResourceManager.GetAllHats().ToArray()[0].sound1;
 		_hatSo?.sound2 = ResourceManager.GetAllHats().ToArray()[0].sound2;
@@ -93,7 +91,7 @@ public static class CreateDrone
 	[HarmonyPostfix]
 	public static void LoadPostfix()
 	{
-		Utilities.Logger.Warning($"post load all");
+		Utilities.Logger.Info($"Loading drone hat.");
 		SetHatInformation();
 	}
 	
@@ -117,7 +115,7 @@ public static class CreateDrone
 	}
 
 	private const float SwarmYOffset = 0.5f;
-	private const float SwarmXOffset = 0.21f;
+	private const float SwarmXOffset = 0.285f;
 	private const float SwarmZOffset = 0.28f;
 	private static void ModifyPropellers(bool setDefault)
 	{

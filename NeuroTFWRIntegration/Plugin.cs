@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using BepInEx;
 using HarmonyLib;
 using NeuroSdk.Messages.Outgoing;
@@ -90,7 +89,7 @@ public class Plugin : BaseUnityPlugin
 			var prefab = AssetBundleHelper.LoadBundle(toastPath,"Assets/ValidationToast.prefab");
 			if (prefab is null)
 			{
-				Utilities.Logger.Error($"toast asset was null");
+				Utilities.Logger.Error($"toast prefab was null");
 				return;
 			}
 
