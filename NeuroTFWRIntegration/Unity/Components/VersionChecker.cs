@@ -129,12 +129,12 @@ public class VersionChecker : MonoBehaviour
 
 		private void ObjectToVersion(JObject obj)
 		{
-			if (!obj.TryGetValue("LatestVersion", out var ver) || ver.Value<string>() is null)
+			if (!obj.TryGetValue("Version", out var ver) || ver.Value<string>() is null)
 			{
 				throw new MissingVersionFieldException("Missing Version.");
 			}
 
-			if (!obj.TryGetValue("LatestURL", out var url) || url.Value<string>() is null)
+			if (!obj.TryGetValue("RedirectURL", out var url) || url.Value<string>() is null)
 			{
 				throw new MissingVersionFieldException("Missing RedirectURL.");
 			}
