@@ -55,6 +55,9 @@ public static class ConfigHandler
 	public static readonly ConfigBase<bool> NeuroChat = new(new("UI", "Chat"), true,
 		new("This will decide if you are able to talk to Neuro through the chatting feature."));
 	
+	public static readonly ConfigBase<bool> VersionChecking = new(new("UI", "VersionChecking"), true,
+		new("This will add UI to the pause menu that will check if you are using the newest version of this mod, this option is here if it is causing a crash or something."));
+	
 	public static readonly ConfigBase<bool> Debug = new(new("Debug", "Debug"), false,
 		new("You probably won't need this."));
 }

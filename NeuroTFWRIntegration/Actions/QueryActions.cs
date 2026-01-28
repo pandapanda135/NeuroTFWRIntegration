@@ -67,7 +67,7 @@ public static class QueryActions
 		public override string Name => "query_world";
 		protected override string Description =>
 			$"Query information about the world, if both of the tile positions are not set the whole world will be sent, else the tile you provide." +
-			$" The current map size is {WorkspaceState.Sim.GetWorldSize()} the initial index is 0.";
+			$" The current map size is {WorkspaceState.Sim.GetWorldSize()} the initial index is 0 so the initial tile will always be (0, 0).";
 		protected override JsonSchema Schema => new()
 		{
 			Type = JsonSchemaType.Object,
