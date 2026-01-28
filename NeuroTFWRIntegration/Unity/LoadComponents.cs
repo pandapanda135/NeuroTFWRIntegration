@@ -10,6 +10,8 @@ namespace NeuroTFWRIntegration.Unity;
 
 public static class LoadComponents
 {
+	public static GameObject? NeuroChat;
+	
 	private static readonly string ChatPath = AssetBundleHelper.GetBundlePath("neuro-chat-canvas");
 	private static readonly string ContainerPath = AssetBundleHelper.GetBundlePath("toastcontainer");
 	private static readonly string VersionPath = AssetBundleHelper.GetBundlePath("version-checker");
@@ -51,7 +53,10 @@ public static class LoadComponents
 		if (!obj)
 		{
 			Utilities.Logger.Error($"There was an error when creating NeuroChat.");
+			return;
 		}
+
+		NeuroChat = obj;
 	}
 
 	private static void AddVersion()

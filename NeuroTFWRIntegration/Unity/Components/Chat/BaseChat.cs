@@ -34,7 +34,6 @@ public class BaseChat : MonoBehaviour
 	
 	public virtual void OpenClicked()
 	{
-		Utilities.Logger.Info($"pressed on close clicked");
 		if (ChatOpen)
 		{
 			CloseExtension();
