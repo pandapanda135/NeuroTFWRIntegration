@@ -43,7 +43,7 @@ public class NeuroChat : BaseChat
 		_windowsErrorText.SetActive(false);
 
 		_windowButton = LoadWindowButton(typeof(WindowButton));
-		_windowButton.transform.localScale = new Vector3(0.5f, 0.5f, 0f);
+		_windowButton.transform.localScale = new Vector3(1f, 1f, 0f);
 	}
 	
 	public override void OpenClicked()
