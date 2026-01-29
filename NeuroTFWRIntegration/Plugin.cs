@@ -45,7 +45,8 @@ public class Plugin : BaseUnityPlugin
 
 		Harmony.CreateAndPatchAll(typeof(RegisterPatches));
 		Harmony.CreateAndPatchAll(typeof(ContextPatches));
-		Harmony.CreateAndPatchAll(typeof(CreateDrone));
+		Harmony.CreateAndPatchAll(typeof(UnlockPatches));
+		Harmony.CreateAndPatchAll(typeof(CreateSwarm));
 		
 		Context.Send($"{Strings.StartGameContext}");
 		RegisterMainActions.PopulateActionLists();

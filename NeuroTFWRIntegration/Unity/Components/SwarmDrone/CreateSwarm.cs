@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace NeuroTFWRIntegration.Unity.Components.SwarmDrone;
 
-public static class CreateDrone
+public static class CreateSwarm
 {
 	private static Mesh? _defaultDroneMesh;
 	
@@ -16,7 +16,7 @@ public static class CreateDrone
 	private static Vector3 _defaultPropellerOffset3;
 	private static Vector3 _defaultPropellerOffset4;
 
-	private static HatSO? _hatSo;
+	public static HatSO? HatSo;
 
 	private static Mesh? _swarmDroneMesh;
 	private static Material? _defaultDroneMaterial;
@@ -24,7 +24,7 @@ public static class CreateDrone
 
 	private static void CreateSwarmHat()
 	{
-		if (_hatSo is not null) return;
+		if (HatSo is not null) return;
 		
 		var hatSo = ScriptableObject.CreateInstance<HatSO>();
 		hatSo.hatName = "swarm";
@@ -36,14 +36,14 @@ public static class CreateDrone
 		// I kinda prefer how this looks so we are doing it this way.
 		hatSo.rotateDroneToMove = true;
 
-		_hatSo = hatSo;
+		HatSo = hatSo;
 	}
 	
 	private static readonly string GymBagPath = AssetBundleHelper.GetBundlePath("gym-bag-drone");
 	private static readonly string MaterialPath = AssetBundleHelper.GetBundlePath("drone-material");
 	private static void SetHatInformation()
 	{
-		if (_hatSo is null)
+		if (HatSo is null)
 		{
 			CreateSwarmHat();
 		}
@@ -79,12 +79,11 @@ public static class CreateDrone
 
 		_swarmDroneMaterial = mat;
 		
-		_hatSo?.hatMesh = new();
-		_hatSo?.sound1 = ResourceManager.GetAllHats().ToArray()[0].sound1;
-		_hatSo?.sound2 = ResourceManager.GetAllHats().ToArray()[0].sound2;
+		HatSo?.hatMesh = new();
+		HatSo?.sound1 = ResourceManager.GetAllHats().ToArray()[0].sound1;
+		HatSo?.sound2 = ResourceManager.GetAllHats().ToArray()[0].sound2;
 		
-		ResourceManager.hats.TryAdd("swarm_hat", _hatSo);
-		MainSim.Inst.UnlockHat(_hatSo);
+		ResourceManager.hats.TryAdd("swarm_hat", HatSo);
 	}
 	
 	[HarmonyPatch(typeof(ResourceManager), nameof(ResourceManager.LoadAll))]
@@ -108,10 +107,10 @@ public static class CreateDrone
 			return;
 		}
 
-		WorkspaceState.FarmRenderer.droneMesh = hatSO != _hatSo ? _defaultDroneMesh : _swarmDroneMesh;
+		WorkspaceState.FarmRenderer.droneMesh = hatSO != HatSo ? _defaultDroneMesh : _swarmDroneMesh;
 		WorkspaceState.FarmRenderer.material =
 			WorkspaceState.FarmRenderer.material == _swarmDroneMaterial ? _defaultDroneMaterial : _swarmDroneMaterial;
-		ModifyPropellers(hatSO != _hatSo);
+		ModifyPropellers(hatSO != HatSo);
 	}
 
 	private const float SwarmYOffset = 0.5f;
