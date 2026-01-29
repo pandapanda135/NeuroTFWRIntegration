@@ -1,31 +1,37 @@
-# V1.1.0 Release Notes
+# V2.0.0 Release Notes
 
-## Action Changes
+This version primarily includes large behine the scene changes that allow for custom content created in Unity to be added to the game. Due to that, those are the only changes that will be mentioned here.
 
-- The documentation paths that are sent to Neuro now send all possible docs rather than just obtained from upgrades..
-- The action for buying upgrades now has an additional configurable option that allows for Neuro to buy an upgrade when not in the menu. The upgrade config has also been changed..
+These are large fundamental changes, so issues are to be expected. I will try to fix them as quickly as possible.
 
-### Query Actions
-There are now many actions for querying different parts of the game.
+## Unity Additions
 
-- Current resources.
-- Information about the drones.
-- Current information about the world state.
-- Query the built in features about the ingame language.
-- Query the upgrades, This is only enabled when Neuro can buy an upgrade at any time.
+### Toasts
 
+In previous versions it was hard to know what actions Neuro was running. Toasts, similar to notifications, now appear after an action's validation completes. They show whether the action succeeded, and if not, why.
 
-### Diff Patches
+There is also another type of toast, that Neuro can create herself. This is primarily so she can insult people and theres not many other uses to them.
 
-- Added using multiple search and replace in a single file search.
-- Allow for multiple files in a single patch.
-- Errors should be thrown more often for inaccurate patches.
+These can be disabled in the config under the `Toasts` section.
 
-### Action Registering
-How actions are registered has been rewrittern, this should allow for easier development and for less bugs.
+### Neuro Chat
 
-## Context
-While alot of the context has been improved the two main changes are.
+Previously there was no way to send Neuro the contents of specific windows. With "Neuro Chat" (the internal name, that is not super accurate) you can send her the contents of one or multiple windows along with a prompt.
 
-- Context is now sent when the game is stared describing the purpose of the game and some things Neuro will need to know.
-- Error messages from the code windows are now sent, this includes their reason and the position of the error. This information can be inaccurate but it should always be close enough to the correct place.
+Currently she can either write a patch or deny the request specified in the prompt.
+
+This can be disabled in the config under `Chat`.
+
+### Version Checker
+
+It exists on the main menu and shows what version you have installed.
+
+Information about the latest version is stored in `version.json` in this repo. The local version is referenced from BepInEx.
+
+This can be disabled in the config under `VersionChecking`.
+
+### Swarm Drone
+
+You can make the drone look like the swarm drone, or at least how it is usually depicted. This is unlocked early, along with most of the other hats in the game.
+
+This cannot be disabled in the config, however it is never equipped automatically and must be enabled the same way hats are in the base game. More specifically, it is under `Hats.Swarm`.
