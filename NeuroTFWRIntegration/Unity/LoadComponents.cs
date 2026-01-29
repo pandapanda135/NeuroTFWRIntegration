@@ -86,7 +86,7 @@ public static class LoadComponents
 
 		if (!File.Exists(bundlePath))
 		{
-			Utilities.Logger.Error($"could not find neuro-chat file.");
+			Utilities.Logger.Error($"could not find the bundle path: {bundlePath}");
 			return null;
 		}
 		
