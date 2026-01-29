@@ -25,7 +25,8 @@ public class Plugin : BaseUnityPlugin
 
 	public static GameObject? ToastContainer;
 	public static ToastsManager? ToastsManager => ToastContainer?.GetComponent<ToastsManager>();
-
+	public static GameObject? NeuroChat;
+	
 	#endregion
 	
 	public Plugin()
@@ -36,8 +37,9 @@ public class Plugin : BaseUnityPlugin
 	private void Awake()
 	{
 		SetLogger(Logger);
-		if (ConfigHandler.WebsocketUrl.Entry.Value != "")
+		if (!string.IsNullOrEmpty(ConfigHandler.WebsocketUrl.Entry.Value))
 		{
+			Utilities.Logger.Info($"Launching the sdk on url: {ConfigHandler.WebsocketUrl.Entry.Value}");
 			Environment.SetEnvironmentVariable("NEURO_SDK_WS_URL", ConfigHandler.WebsocketUrl.Entry.Value);
 		}
 
@@ -45,7 +47,8 @@ public class Plugin : BaseUnityPlugin
 
 		Harmony.CreateAndPatchAll(typeof(RegisterPatches));
 		Harmony.CreateAndPatchAll(typeof(ContextPatches));
-		Harmony.CreateAndPatchAll(typeof(CreateDrone));
+		Harmony.CreateAndPatchAll(typeof(UnlockPatches));
+		Harmony.CreateAndPatchAll(typeof(CreateSwarm));
 		
 		Context.Send($"{Strings.StartGameContext}");
 		RegisterMainActions.PopulateActionLists();
@@ -67,16 +70,6 @@ public class Plugin : BaseUnityPlugin
 		{
 			_waitNext = -1;
 			return;
-		}
-
-		if (UnityInput.Current.GetKey(KeyCode.U))
-		{
-			Utilities.Logger.Info($"propeller amount: {GameObject.Find("Farm").GetComponent<FarmRenderer>().propellerMeshes.Count}");
-			_waitNext = 100;
-			foreach (var kvp in ResourceManager.hats)
-			{
-				Utilities.Logger.Info($"hat: {kvp.Key}   {kvp.Value.className}    {kvp.Value.hidden}    {kvp.Value.droneFlyHeight}");
-			}
 		}
 		
 		if (UnityInput.Current.GetKey(KeyCode.H))

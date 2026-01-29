@@ -43,7 +43,7 @@ public class NeuroChat : BaseChat
 		_windowsErrorText.SetActive(false);
 
 		_windowButton = LoadWindowButton(typeof(WindowButton));
-		_windowButton.transform.localScale = new Vector3(0.5f, 0.5f, 0f);
+		_windowButton.transform.localScale = new Vector3(1f, 1f, 0f);
 	}
 	
 	public override void OpenClicked()
@@ -151,7 +151,7 @@ public class NeuroChat : BaseChat
 			.Register();
 	}
 
-	private void ChangeErrorText(string text, GameObject? obj = null)
+	public void ChangeErrorText(string text, GameObject? obj = null)
 	{
 		obj ??= _errorText;
 		
@@ -211,7 +211,7 @@ internal class DenyRequest : NeuroActionWrapper<string?>
 		
 		var toast = ToastsManager.CreateValidationToast("test", ValidationToast.ValidationLevels.Failure);
 		if (!toast)
-			return ExecutionResult.Failure($"There was an error creating the toast. This is an internal error oops");
+			return ExecutionResult.Failure($"There was an error creating the toast. This is an internal error. Oops!");
 		
 		return ExecutionResult.Success();
 	}
@@ -220,13 +220,15 @@ internal class DenyRequest : NeuroActionWrapper<string?>
 	{
 		var toastDescription = s is null
 			? "Neuro denied your request."
-			: $"Neuro denied your request, this is the feedback she sent you.\n{s}";
+			: $"Neuro denied your request, this is the feedback she sent you:\n{s}";
 
 		var toast = ToastsManager.CreateValidationToast(toastDescription,ValidationToast.ValidationLevels.Failure);
 		if (!toast)
 			return;
 		
 		Plugin.ToastsManager?.AddToast(toast);
+		Plugin.NeuroChat?.GetComponent<NeuroChat>().ChangeErrorText(toastDescription);
+
 		RegisterMainActions.RegisterMain();
 	}
 

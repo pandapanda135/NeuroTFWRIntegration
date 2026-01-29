@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using NeuroTFWRIntegration.Unity.Components;
 using NeuroTFWRIntegration.Unity.Components.Chat;
@@ -10,6 +11,8 @@ namespace NeuroTFWRIntegration.Unity;
 
 public static class LoadComponents
 {
+	public static VersionChecker.VersionInformation? CachedVersion = null;
+	
 	private static readonly string ChatPath = AssetBundleHelper.GetBundlePath("neuro-chat-canvas");
 	private static readonly string ContainerPath = AssetBundleHelper.GetBundlePath("toastcontainer");
 	private static readonly string VersionPath = AssetBundleHelper.GetBundlePath("version-checker");
@@ -29,11 +32,11 @@ public static class LoadComponents
 
 		if (ConfigHandler.VersionChecking.Entry.Value)
 		{
-			AddVersion();
+			Plugin.Instance?.StartCoroutine(AddVersion());
 		}
 	}
 	
-	private static void AddToastsContainer()
+	public static void AddToastsContainer()
 	{
 		var obj = CreateGameObject("ToastsContainer", ContainerPath, "Assets/ToastsContainer.prefab", typeof(ToastsManager));
 		if (!obj)
@@ -45,27 +48,38 @@ public static class LoadComponents
 		Plugin.ToastContainer = obj;
 	}
 	
-	private static void AddChat()
+	public static void AddChat()
 	{
 		var obj = CreateGameObject("NeuroChatCanvas", ChatPath, "Assets/NeuroChatCanvas.prefab", typeof(NeuroChat));
 		if (!obj)
 		{
 			Utilities.Logger.Error($"There was an error when creating NeuroChat.");
+			return;
 		}
+
+		Plugin.NeuroChat = obj;
 	}
 
-	private static void AddVersion()
+	/// <summary>
+	/// This will create the version checker, Menu can be inactive hence why this is a coroutine.
+	/// </summary>
+	public static IEnumerator AddVersion()
 	{
+		while (!GameObject.Find("Menu"))
+		{
+			yield return null;
+		}
+
 		var obj = CreateGameObject("VersionCanvas", VersionPath, "Assets/VersionCanvas.prefab", typeof(VersionChecker), GameObject.Find("Menu"));
 		if (!obj)
 		{
 			Utilities.Logger.Error($"There was an error when creating the Version checker.");
 		}
 	}
-
+	
 	private static GameObject? CreateGameObject(string gameObjectName, string bundlePath, string assetPath, Type componentType, GameObject? parent = null)
 	{
-		if (GameObject.Find(gameObjectName) is not null)
+		if (GameObject.Find(gameObjectName))
 		{
 			return null;
 		}
@@ -82,7 +96,6 @@ public static class LoadComponents
 			throw new NullReferenceException("Toast's container AssetBundle was null.");
 		}
 
-		Utilities.Logger.Info($"creating chat");
 		var chat = AssetBundleHelper.LoadBundle(bundlePath, assetPath);
 		if (chat is null)
 		{
@@ -95,7 +108,6 @@ public static class LoadComponents
 			throw new NullReferenceException($"There was an issue finding OverlayUI.");
 		}
 		
-		Utilities.Logger.Info($"instantiating object");
 		var chatInst = Object.Instantiate(chat, overlay.transform);
 		
 		chatInst.SetActive(true);

@@ -12,9 +12,6 @@ public class BaseChat : MonoBehaviour
 	
 	protected void AwakeCore()
 	{
-		Utilities.Logger.Info($"creating base chat");
-		
-		Utilities.Logger.Info($"finding");
 		var find = GameObject.Find("MainButton");
 		if (!find)
 		{
@@ -28,13 +25,12 @@ public class BaseChat : MonoBehaviour
 			Utilities.Logger.Error($"could not find button");
 			return;
 		}
-		Utilities.Logger.Info($"setting onclick listener");
+		
 		component.onClick.AddListener(OpenClicked);
 	}
 	
 	public virtual void OpenClicked()
 	{
-		Utilities.Logger.Info($"pressed on close clicked");
 		if (ChatOpen)
 		{
 			CloseExtension();
@@ -59,7 +55,6 @@ public class BaseChat : MonoBehaviour
 
 	private void Start()
 	{
-		Utilities.Logger.Info($"base chat started");
 	}
 
 	// we use FixedUpdate as it should load to less lag than Update due to it being based on ticks not framerate

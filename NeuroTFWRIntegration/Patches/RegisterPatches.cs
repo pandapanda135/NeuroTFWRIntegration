@@ -56,8 +56,6 @@ public static class RegisterPatches
 			RegisterMainActions.UnregisterMain();	
 		}
 		
-		Utilities.Logger.Info($"docs: {string.Join("\n",WorkspaceState.Sim.researchMenu.allBoxes.Select(box => box.Value.unlockSO.docs))}");
-		
 		// everything here is either handled by the action or not needed by it
 		if (ConfigHandler.ResearchMenuActions.Entry.Value == ResearchMenuActions.OutOfMenu)
 		{

@@ -1,4 +1,4 @@
-# Neuro The Farmer Was Replaced Integration
+# <img src="Assets/ColourGymbag.svg" width="32" style="vertical-align:middle;"> Neuro The Farmer Was Replaced Integration
 
 This is an integration for the game [The Farmer Was Replaced](https://store.steampowered.com/app/2060160?snr=5000_5100__), currently this is intended for someone else to play with Neuro to help her code.
 
