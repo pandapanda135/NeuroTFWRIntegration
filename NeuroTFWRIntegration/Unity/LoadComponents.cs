@@ -11,8 +11,6 @@ namespace NeuroTFWRIntegration.Unity;
 
 public static class LoadComponents
 {
-	public static GameObject? NeuroChat;
-
 	public static VersionChecker.VersionInformation? CachedVersion = null;
 	
 	private static readonly string ChatPath = AssetBundleHelper.GetBundlePath("neuro-chat-canvas");
@@ -59,7 +57,7 @@ public static class LoadComponents
 			return;
 		}
 
-		NeuroChat = obj;
+		Plugin.NeuroChat = obj;
 	}
 
 	/// <summary>

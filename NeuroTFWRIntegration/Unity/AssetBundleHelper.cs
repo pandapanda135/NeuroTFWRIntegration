@@ -13,7 +13,6 @@ public static class AssetBundleHelper
 	
 	public static AssetBundle GetAssetBundle(string path)
 	{
-		Utilities.Logger.Info($"amount of loaded: {AssetBundle.GetAllLoadedAssetBundles_Native().Length}      {AssetBundle.GetAllLoadedAssetBundles().Count()}");
 		if (!File.Exists(path))
 		{
 			throw new FileNotFoundException("You are missing the toast asset bundle.");

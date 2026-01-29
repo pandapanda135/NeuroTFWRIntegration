@@ -227,7 +227,7 @@ internal class DenyRequest : NeuroActionWrapper<string?>
 			return;
 		
 		Plugin.ToastsManager?.AddToast(toast);
-		LoadComponents.NeuroChat?.GetComponent<NeuroChat>().ChangeErrorText(toastDescription);
+		Plugin.NeuroChat?.GetComponent<NeuroChat>().ChangeErrorText(toastDescription);
 
 		RegisterMainActions.RegisterMain();
 	}
