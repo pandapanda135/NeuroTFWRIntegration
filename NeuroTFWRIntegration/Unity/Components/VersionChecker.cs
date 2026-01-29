@@ -89,6 +89,12 @@ public class VersionChecker : MonoBehaviour
 
 	private IEnumerator GetVersion(string uri)
 	{
+		if (LoadComponents.CachedVersion is not null)
+		{
+			_versionInformation = LoadComponents.CachedVersion;
+			yield break;
+		}
+		
 		var request = UnityWebRequest.Get(uri);
 		yield return request.SendWebRequest();
 
@@ -113,11 +119,12 @@ public class VersionChecker : MonoBehaviour
 			Destroy(gameObject);
 			yield break;
 		}
-		
+
+		LoadComponents.CachedVersion = _versionInformation;
 		Utilities.Logger.Info($"final version: {_versionInformation.LatestVersion}   {_versionInformation.RedirectURL}");
 	}
 
-	private class VersionInformation
+	public class VersionInformation
 	{
 		public VersionInformation(JObject obj)
 		{
