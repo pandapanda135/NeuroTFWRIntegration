@@ -11,12 +11,12 @@ public class NeuroToast : BaseToast
 	
 	public void Init(string text)
 	{
-		InitCore();
 		if (Initialized)
 		{
 			Utilities.Logger.Error($"This toast has already been initialized");
 			return;
 		}
+		InitCore();
 		
 		SetText("ContentsContainer/DescriptionText", text);
 	}

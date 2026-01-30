@@ -20,8 +20,8 @@ public class NeuroChat : BaseChat
 
 	private Button? _submitButton;
 	private GameObject? _windowGrid;
+	private GameObject? _errorExtension;
 	private GameObject? _errorText;
-	private GameObject? _windowsErrorText;
 	private GameObject? _promptInput;
 
 	private GameObject? _windowButton;
@@ -34,13 +34,12 @@ public class NeuroChat : BaseChat
 		_submitButton = GameObject.Find("Submit").GetComponent<Button>();
 		_submitButton.onClick.AddListener(SubmitPrompt);
 		_windowGrid = GameObject.Find("WindowGrid");
+		_errorExtension = GameObject.Find("ErrorExtension");
 		_errorText = GameObject.Find("ErrorText");
-		_windowsErrorText = GameObject.Find("WindowsErrorText");
 		_promptInput = GameObject.Find("PromptInput");
 		AwakeCore();
 		
 		Extension.SetActive(false);
-		_windowsErrorText.SetActive(false);
 
 		_windowButton = LoadWindowButton(typeof(WindowButton));
 		_windowButton.transform.localScale = new Vector3(1f, 1f, 0f);
@@ -65,14 +64,14 @@ public class NeuroChat : BaseChat
 
 		if (!WorkspaceState.CodeWindows.Any())
 		{
-			ChangeErrorText("It seems there are no valid windows to select :(", _windowsErrorText);
+			ChangeErrorText("It seems there are no valid windows to select :(");
 			return;
 		}
 		
 		if (!_windowGrid)
 		{
 			Utilities.Logger.Error($"window grid was null when adding PopulateWindowList");
-			ChangeErrorText("There was an internal issue when finding window grid. Oops!", _windowsErrorText);
+			ChangeErrorText("There was an internal issue when finding window grid. Oops!");
 			return;
 		}
 		
@@ -104,7 +103,7 @@ public class NeuroChat : BaseChat
 
 	private void ApplyPrompt()
 	{
-		List<CodeWindow> windows = new();
+		List<CodeWindow> windows = [];
 		for (int i = 0; i < _windowGrid?.transform.childCount; i++)
 		{
 			var button = _windowGrid.transform.GetChild(i).GetComponent<WindowButton>();
@@ -116,19 +115,13 @@ public class NeuroChat : BaseChat
 				if (!button.selected) continue;
 				
 				Utilities.Logger.Error($"There was an error when getting a code window as it was null, the button was" +
-				                       $"button.selected {button.displayString} selected: {button.selected}");
+				                       $"{button.displayString} selected: {button.selected}");
 			}
 		}
 
 		if (!windows.Any())
 		{
-			throw new PromptException(PromptException.Reasons.Windows, "You need to select at least one button.");
-		}
-		
-		var prompt = _promptInput?.GetComponent<TMP_InputField>().text;
-		if (string.IsNullOrEmpty(prompt))
-		{
-			throw new PromptException(PromptException.Reasons.Prompt, "You did not supply a prompt.");
+			throw new PromptException(PromptException.Reasons.Windows, "You need to select at least one window to send.");
 		}
 		
 		// we probably won't need existing error at this point.
@@ -144,19 +137,26 @@ public class NeuroChat : BaseChat
 			windowState += $"\n# File name\n{codeWindow.fileNameText.text}\n## Contents\n{WindowFileSystem.Open(codeWindow.fileName)}";
 		}
 		
+		var prompt = _promptInput?.GetComponent<TMP_InputField>().text;
 		ActionWindow.Create(WorkspaceState.Object).AddAction(patchAction).AddAction(new DenyRequest())
 			.SetForce(0, "You have been asked to write a patch for a window by whoever you are playing with.",
-				$"This is the code in the windows they want you to modify.\n{windowState}\nThis is the prompt they sent you.\n{prompt}",
+				$"This is the code in the windows they want you to modify.\n{windowState}\n" +
+				$"{(string.IsNullOrEmpty(prompt) 
+					? "Whoever you are playing with did not supply a prompt. If they have asked for you to do anything in-game recently, you should aim to do that."
+					: $"This is the prompt you were sent:\n{prompt}")}",
 				true)
 			.Register();
 	}
 
 	public void ChangeErrorText(string text, GameObject? obj = null)
 	{
+		GameObject? extension = !obj ? _errorExtension : null;
 		obj ??= _errorText;
 		
 		obj?.SetActive(!string.IsNullOrEmpty(text));
 		obj?.GetComponent<TextMeshProUGUI>().text = text;
+
+		extension?.SetActive(!string.IsNullOrEmpty(text));
 	}
 	
 	private static GameObject LoadWindowButton(Type component)
